@@ -154,17 +154,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         },
       ],
     },
+    // English-only and private, so there is nothing to offer alternates for.
     alternates: {
-      canonical: "https://www.workout.cool",
-      languages: {
-        "fr-FR": "https://www.workout.cool/fr",
-        "en-US": "https://www.workout.cool/en",
-        "es-ES": "https://www.workout.cool/es",
-        "pt-PT": "https://www.workout.cool/pt",
-        "ru-RU": "https://www.workout.cool/ru",
-        "zh-CN": "https://www.workout.cool/zh-CN",
-        "x-default": "https://www.workout.cool",
-      },
+      canonical: getServerUrl(),
     },
     authors: [{ name: SiteConfig.company.name, url: getServerUrl() }],
     creator: SiteConfig.company.name,

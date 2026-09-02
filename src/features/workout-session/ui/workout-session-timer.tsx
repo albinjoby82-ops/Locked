@@ -25,7 +25,7 @@ export function WorkoutSessionTimer() {
   return (
     // Docked just above the bottom nav rather than floating mid-screen, where it
     // used to sit on top of the set controls it was meant to sit beside.
-    <div className="fixed bottom-[4.25rem] left-1/2 z-40 -translate-x-1/2 transform">
+    <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2 transform">
       <div className="bg-white dark:bg-slate-900 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 shadow-lg backdrop-blur-sm">
         <div className="flex items-center justify-between gap-2">
           {/* Timer display */}

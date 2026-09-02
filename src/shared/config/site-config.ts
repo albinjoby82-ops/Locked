@@ -13,9 +13,11 @@ export const SiteConfig = {
     "workout planner",
     "exercise database",
   ],
-  prodUrl: "https://workout.cool",
+  // Not used for URL resolution — see src/shared/lib/server-url.ts, which reads
+  // NEXT_PUBLIC_APP_URL. Kept only so nothing here claims upstream's domain.
+  prodUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   logo: "/images/logo.png",
-  domain: "workout.cool",
+  domain: "locked-in",
   appIcon: "/images/logo4.jpg",
   company: {
     name: "Workout Cool",

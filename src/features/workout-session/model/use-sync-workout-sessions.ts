@@ -16,6 +16,20 @@ interface SyncState {
 
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * What a sync attempt did, so the caller can tell "saved" from "still only on
+ * this phone". Previously every failure was swallowed into a console.error,
+ * which nobody reads on a phone in a gym.
+ */
+export interface SyncResult {
+  /** Sessions that failed to upload. They stay in localStorage and retry. */
+  failed: number;
+  /** Sessions that were attempted. */
+  total: number;
+  /** True when there was nobody signed in, so nothing was even tried. */
+  skipped: boolean;
+}
+
 export function useSyncWorkoutSessions() {
   const { data: session, isPending: isSessionLoading } = useSession();
 
@@ -25,13 +39,14 @@ export function useSyncWorkoutSessions() {
     lastSyncAt: null,
   });
 
-  const syncSessions = async () => {
-    if (!session?.user) return;
+  const syncSessions = async (): Promise<SyncResult> => {
+    if (!session?.user) return { failed: 0, total: 0, skipped: true };
 
     setSyncState((prev) => ({ ...prev, isSyncing: true, error: null }));
 
     try {
       const localSessions = workoutSessionLocal.getAll().filter((s) => s.status === "completed");
+      let failed = 0;
 
       for (const localSession of localSessions) {
         try {
@@ -56,6 +71,7 @@ export function useSyncWorkoutSessions() {
             }
           }
         } catch (error) {
+          failed += 1;
           console.error(`Failed to sync session ${localSession.id}:`, error);
         }
       }
@@ -67,6 +83,8 @@ export function useSyncWorkoutSessions() {
         isSyncing: false,
         lastSyncAt: new Date(),
       }));
+
+      return { failed, total: localSessions.length, skipped: false };
     } catch (error) {
       console.log("error:", error);
       setSyncState((prev) => ({
@@ -74,6 +92,9 @@ export function useSyncWorkoutSessions() {
         isSyncing: false,
         error: error as Error,
       }));
+
+      // The whole attempt fell over, so treat every pending session as failed.
+      return { failed: 1, total: 1, skipped: false };
     }
   };
 

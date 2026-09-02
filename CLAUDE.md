@@ -32,8 +32,9 @@ and are background, not instructions.
   hotlinked from that repo, not vendored.
 - **Prisma + PostgreSQL** — schema at `prisma/schema.prisma`. Postgres, not
   SQLite/D1: the schema relies on scalar list columns.
-- **Auth**: better-auth, email + password only, gated by an `ALLOWED_EMAILS`
-  allowlist enforced on user creation.
+- **Auth**: better-auth, **Google sign-in only** (passwords are disabled), gated
+  by an `ALLOWED_EMAILS` allowlist enforced on user creation — the hook is
+  provider-agnostic, so it refuses a stranger's Google account too.
 - **The logger**: `src/features/workout-builder/` is the optional
   equipment→muscles→exercises wizard; `src/features/workout-session/` is the
   actual session. A workout can start empty and gain exercises from
@@ -71,5 +72,11 @@ Local setup (Postgres required) is documented in `PROVENANCE.md`.
 
 ## Deployment
 
-Cloudflare Workers via `@opennextjs/cloudflare`, with Neon/Supabase Postgres.
-Step-by-step in `NOTES.md`.
+Vercel + Neon Postgres + Google OAuth, all on free tiers. Step-by-step in
+`DEPLOY.md`; the reasoning, including why not Cloudflare and why not Firebase,
+is in `NOTES.md`.
+
+`src/shared/lib/server-url.ts` is load-bearing: it feeds the better-auth client
+`baseURL` and the OAuth `callbackURL`, so it must resolve to the real origin.
+`DATABASE_URL` is Neon's pooled string, `DIRECT_URL` the unpooled one that
+migrations and the exercise import need.

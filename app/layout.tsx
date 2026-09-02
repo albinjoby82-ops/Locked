@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 
 import type { ReactNode } from "react";
+import type { Viewport } from "next";
 
 import { cn } from "@/shared/lib/utils";
 
@@ -31,14 +32,34 @@ const permanentMarker = Permanent_Marker({
   display: "swap",
 });
 
-export const preferredRegion = ["fra1", "sfo1", "iad1"];
+/**
+ * One region, not three. The database lives in a single place, so spreading
+ * functions across continents just adds an ocean to every query. Change this to
+ * whichever region the Neon instance is in.
+ */
+export const preferredRegion = ["lhr1"];
+
+/**
+ * Next's typed viewport export, replacing a hand-written meta tag that read
+ * `maximum-scale=1 viewport-fit=cover` — no comma, so the whole token was
+ * invalid and `viewport-fit` never applied. That silently disabled the
+ * `env(safe-area-inset-*)` values the bottom nav relies on.
+ *
+ * `maximum-scale` is gone with it: pinch-zoom is worth keeping when you're
+ * squinting at a chart mid-set.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#FF5722",
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html className="h-full" dir="ltr" lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
-        <meta content="width=device-width, initial-scale=1, maximum-scale=1 viewport-fit=cover" name="viewport" />
 
         {/* PWA Meta Tags */}
         <meta content="yes" name="apple-mobile-web-app-capable" />
@@ -47,7 +68,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta content="yes" name="mobile-web-app-capable" />
         <meta content="#FF5722" name="msapplication-TileColor" />
         <meta content="/android-chrome-192x192.png" name="msapplication-TileImage" />
-        <meta content="#FF5722" name="theme-color" />
       </head>
 
       <body

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 
 import { StructuredDataScript } from "@/shared/lib/structured-data";
+import { getServerUrl } from "@/shared/lib/server-url";
 
 interface BreadcrumbItem {
   label: string;
@@ -23,7 +24,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       "@type": "ListItem",
       position: index + 1,
       name: item.label,
-      item: item.href ? `https://www.workout.cool${item.href}` : undefined,
+      item: item.href ? `${getServerUrl()}${item.href}` : undefined,
     })),
   };
 

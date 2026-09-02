@@ -14,7 +14,13 @@ export default async function AuthLayout(props: LayoutParams<{}>) {
 
   const headerStore = await headers();
   const searchParams = Object.fromEntries(new URLSearchParams(headerStore.get("searchParams") || ""));
-  const translatedError = t(`next_auth_errors.${searchParams.error}` as keyof typeof t);
+
+  // `not_allowed` is ours: the sign-in form explains the allowlist refusal in
+  // its own words, so this generic banner would only duplicate it — badly, since
+  // there is no translation key for it and "check your credentials" is wrong
+  // advice for an account that will never be allowed in.
+  const error = searchParams.error === "not_allowed" ? undefined : searchParams.error;
+  const translatedError = error ? t(`next_auth_errors.${error}` as keyof typeof t) : "";
 
   const user = await auth.api.getSession({ headers: headerStore });
 
@@ -25,7 +31,7 @@ export default async function AuthLayout(props: LayoutParams<{}>) {
   return (
     <>
       <div className="h-full flex">
-        {searchParams.error && (
+        {error && (
           <Alert className="mb-4" variant="error">
             <AlertTitle>{translatedError}</AlertTitle>
             <AlertDescription>{t("signin_error_subtitle")}</AlertDescription>

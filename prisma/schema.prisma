@@ -7,7 +7,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Pooled, for the app: every serverless instance keeps its own pool.
+  url       = env("DATABASE_URL")
+  // Unpooled, for migrations and the exercise import. PgBouncer in transaction
+  // mode can hold neither Prisma's advisory locks nor its long transactions.
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {

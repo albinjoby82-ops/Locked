@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -145,17 +146,25 @@ export function WorkoutSessionSets({
     finishSet(exerciseIdx, setIdx);
   };
 
-  const handleFinishSession = () => {
+  const handleFinishSession = async () => {
     feedback.onFinishWorkout();
     completeWorkout();
     syncFavoriteExercises();
-    syncSessions();
     onCongrats();
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+    // The celebration is honest either way — the workout is already safe in
+    // localStorage and the synchroniser retries every five minutes. What was
+    // missing is being told it hasn't reached the server yet, which on a phone
+    // with no signal is the difference between trusting the app and not.
+    const result = await syncSessions();
+    if (result.failed > 0) {
+      toast.error("Saved on this phone. It'll upload when you're back online.");
+    }
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto pb-28 px-3 sm:px-6">
+    <div className="w-full max-w-3xl mx-auto pb-[calc(7rem+env(safe-area-inset-bottom))] px-3 sm:px-6">
       <ol className="relative border-l-2 ml-2 border-slate-200 dark:border-slate-700">
         {session.exercises.map((ex, idx) => {
           const allSetsCompleted = ex.sets.length > 0 && ex.sets.every((set) => set.completed);

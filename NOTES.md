@@ -424,6 +424,133 @@ That's fine for two English speakers, and it's another argument for
 finishing the i18n removal PLAN.md asked for. If you do need a new key,
 budget for deleting the non-English locale files first.
 
+---
+
+# Deploying (Vercel + Neon + Google)
+
+Step-by-step in `DEPLOY.md`. What changed in the code, and why.
+
+## Vercel, not Cloudflare Workers — [call], reversing the Step 1 decision
+
+Step 1 committed `wrangler.jsonc` and `open-next.config.ts`. Going back over it
+before deploying, that path had four blockers, three of which were silent:
+
+1. Prisma's query engine can't open a direct TCP connection on Workers. It needs
+   `@prisma/adapter-neon` + the `driverAdapters` preview; neither was installed
+   and the schema wasn't configured for it.
+2. `wrangler.jsonc` scheduled a cron with **no `scheduled` handler anywhere** to
+   invoke — the nightly job would never have run, and nothing would have said so.
+3. No npm script wired `opennextjs-cloudflare build`.
+4. `getServerUrl()` (below) returns the wrong origin off Vercel, which breaks the
+   OAuth redirect outright.
+
+`PLAN.md` said Vercel originally. The Cloudflare config has been deleted along
+with `@opennextjs/cloudflare` and `wrangler`.
+
+**Firebase was considered and rejected.** The ask was for something free, which
+Neon's free tier already is. Firestore would have meant rewriting the data layer:
+the schema depends on Postgres scalar list columns (`Int[]`, enum arrays — the
+same reason SQLite and D1 were rejected in Step 1), the board and stats use
+`groupBy`/`$transaction`/`distinct` and relational joins, better-auth uses
+`prismaAdapter`, and the exercise picker needs substring search (`contains` +
+`mode: "insensitive"`), which Firestore cannot do without Algolia or Typesense
+bolted alongside.
+
+## `getServerUrl()` pointed at somebody else's domain
+
+The worst bug found in this pass, and it was invisible locally.
+`src/shared/lib/server-url.ts` returned `SiteConfig.prodUrl` whenever
+`VERCEL_ENV === "production"` — and that constant is `https://workout.cool`.
+Since it feeds the better-auth client `baseURL`, the OAuth `callbackURL` and
+`metadataBase`, the first production deploy would have handed out upstream's
+domain as its auth callback and sign-in would simply have failed.
+
+It now resolves `NEXT_PUBLIC_APP_URL`, preferring `VERCEL_URL` on preview deploys
+so those work on their own hostname, and no longer reads `SiteConfig` at all. The
+hardcoded `https://www.workout.cool` canonical/hreflang tags, sitemap base and
+breadcrumb JSON-LD were switched to it too.
+
+## Google sign-in, and passwords are gone
+
+`socialProviders.google` with `account.accountLinking.trustedProviders:
+["google"]`. The `ALLOWED_EMAILS` hook is untouched and needed no change — it
+sits in the adapter path, so it refuses a stranger's Google sign-up at exactly
+the point it used to refuse a password signup, and correctly does *not* fire when
+an existing user links a second provider.
+
+`emailAndPassword` is now `enabled: false`. Upstream had overridden better-auth's
+scrypt with `hashStringWithSalt(password, BETTER_AUTH_SECRET)` — one global salt,
+no per-user salt, no KDF, so a single database leak cracks both accounts at once
+and rainbow-tables across them. Deleting the password path is a better answer
+than re-hashing it, and one tap beats typing a password on a phone anyway.
+
+Two related fixes:
+
+- **`trustedOrigins` was `["*"]`**, which disables better-auth's origin check
+  entirely. Harmless on localhost, not on a public URL.
+- **The session config was backwards**: a 30-day `cookieCache.maxAge` over a
+  7-day session expiry. The cookie cache is a signed snapshot that skips the
+  database, so that setup kept honouring sessions that had already expired.
+  Staying logged in is `expiresIn` — now 90 days, with a 5-minute cache.
+
+**Refusal used to be silent.** `ProviderButton` called
+`authClient.signIn.social()` inside a `useMutation` with no `onError` and never
+inspected the returned error, so a failure just stopped the spinner. It now
+throws on error, toasts, and passes an `errorCallbackURL` — necessary because an
+`APIError` from `databaseHooks` inside the OAuth callback *redirects* rather than
+returning JSON, so without one a refused account landed on a bare better-auth
+error page. The sign-in form reads that flag and explains the allowlist.
+
+Verified against a live build: the consent URL carries
+`redirect_uri=http://localhost:3000/api/auth/callback/google`, scopes
+`email profile openid` (not restricted, so no Google verification review), and
+PKCE. Password sign-in now returns `EMAIL_AND_PASSWORD_IS_NOT_ENABLED`.
+
+## Serverless
+
+- `prisma/schema.prisma` gained `directUrl`; `DATABASE_URL` is the pooled Neon
+  string and `DIRECT_URL` the unpooled one, because PgBouncer in transaction mode
+  can hold neither Prisma's advisory locks nor the importer's long transactions.
+- `src/shared/lib/prisma.ts` cached the client on `globalThis` only when
+  `NODE_ENV !== "production"` — exactly backwards for serverless, where instances
+  are reused across invocations. Now cached unconditionally.
+- `preferredRegion` listed three continents; pinned to one.
+- `vercel.json` schedules the nightly rebuild. No route change was needed: Vercel
+  sends `Authorization: Bearer $CRON_SECRET` automatically, which is what
+  `/api/cron/daily-stats` already checks.
+
+## Phone fixes
+
+**A failed save looked like a successful one.** `syncSessions()` was called
+without `await` and its result discarded, while per-session failures were caught
+and only `console.error`'d — invisible on a phone. Confetti fired regardless. It
+now returns `{ failed, total, skipped }`, and finishing a workout with no signal
+toasts "Saved on this phone. It'll upload when you're back online."
+
+Verified with the network actually cut: the toast appears, the workout stays in
+localStorage, and it uploads on reconnect. `MAX_SESSIONS` also went from 10 to
+50 — `saveAll` keeps only the newest N, so an eleventh unsynced workout used to
+silently drop the oldest.
+
+**The viewport meta was malformed.** `maximum-scale=1 viewport-fit=cover` with no
+comma between them, so the token was invalid and `viewport-fit` never applied —
+which silently meant `env(safe-area-inset-*)` had no real values. Replaced with
+Next's typed `viewport` export, and `maximum-scale` dropped so pinch-zoom works.
+
+**Safe-area insets** were used nowhere in the codebase, so the fixed bottom nav
+sat under the iPhone home indicator. Added to the nav, the session timer, and the
+two content spacers that have to clear them.
+
+## Removed
+
+`wrangler.jsonc`, `open-next.config.ts`, `nextauth.d.ts` (augmenting a package
+that isn't installed), the duplicate `app/api/auth/signup/route.ts`, and the
+dependencies `@opennextjs/cloudflare`, `wrangler`, `@vercel/functions`,
+`@auth/prisma-adapter` and `pg` — none of them imported anywhere.
+
+The signup, forgot-password, reset-password and verify-email routes now redirect
+to sign-in; with passwords off they were dead ends.
+
 ## Smaller things deferred
 
 - **Turbopack workspace-root warning** on every `next dev`, left over from when

@@ -13,6 +13,12 @@ export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "production", "test"]),
     DATABASE_URL: z.string().url(),
+    /**
+     * Unpooled connection, for `prisma migrate deploy` and the exercise import.
+     * PgBouncer in transaction mode can't hold Prisma's advisory locks or its
+     * long transactions, so those two jobs need to bypass the pooler.
+     */
+    DIRECT_URL: z.string().url(),
     BETTER_AUTH_URL: z.string().url(),
     BETTER_AUTH_SECRET: z.string().min(1),
     /** Comma-separated list of the only email addresses allowed to hold an account. */
@@ -23,6 +29,9 @@ export const env = createEnv({
      * by hand in development.
      */
     CRON_SECRET: z.string().min(1).optional(),
+    /** Google OAuth — the only way into the app. */
+    GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),

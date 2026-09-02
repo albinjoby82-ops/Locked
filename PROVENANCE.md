@@ -41,7 +41,7 @@ a reference for the importer's CSV format.
 ## Running it
 
 ```sh
-cp .env.example .env      # fill in DATABASE_URL and ALLOWED_EMAILS
+cp .env.example .env      # fill in DATABASE_URL, ALLOWED_EMAILS and the Google keys
 pnpm install
 npx prisma migrate deploy
 npx tsx scripts/import-exercises-with-attributes.ts ./data/exercises.csv

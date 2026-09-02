@@ -8,7 +8,6 @@ import { LogEvents } from "@/shared/lib/analytics/events";
 import { ActionError, actionClient } from "@/shared/api/safe-actions";
 import { signUpSchema } from "@/features/auth/signup/schema/signup.schema";
 import { auth } from "@/features/auth/lib/better-auth";
-import { env } from "@/env";
 
 export const signUpAction = actionClient.schema(signUpSchema).action(async ({ parsedInput }) => {
   const t = await getI18n();
