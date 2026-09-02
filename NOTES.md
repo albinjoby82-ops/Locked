@@ -541,6 +541,39 @@ Next's typed `viewport` export, and `maximum-scale` dropped so pinch-zoom works.
 sat under the iPhone home indicator. Added to the nav, the session timer, and the
 two content spacers that have to clear them.
 
+## Setup without a terminal
+
+Two jobs normally need a laptop: applying the schema and importing the
+exercises. Both are now doable from a browser.
+
+`vercel-build` runs `prisma migrate deploy && next build`, so the schema applies
+itself on deploy. Vercel prefers `vercel-build` over `build` when both exist.
+Preview deploys run migrations too, against the same database — acceptable for
+two people, and the reason this isn't the usual recommendation.
+
+`GET /api/admin/seed-exercises` imports `data/exercises.csv`, gated by the same
+`isOperator` check as the cron route (now extracted to
+`src/shared/api/operator-auth.ts` rather than duplicated). Three things it has
+to get right:
+
+- **The CSV isn't traced into the bundle.** Nothing imports it — the route reads
+  it off disk — so `outputFileTracingIncludes` in `next.config.ts` is what stops
+  it failing with ENOENT in production.
+- **It has to be batched and resumable.** `?offset=`/`?limit=`, returning
+  `{ processed, nextOffset, total, done }` plus a `next` link to click.
+- **It has to be fast.** The CLI script makes ~20 round trips per exercise
+  (per-exercise `upsert`, then `ensureAttributeNameExists`/`...ValueExists` per
+  attribute) — minutes in total. The route preloads the five attribute-name and
+  ~60 attribute-value rows once, then per batch does `createMany` + `findMany`
+  by slug + `deleteMany`/`createMany` for attributes: a handful of queries per
+  *batch*. Locally the full import runs in **3 seconds across 6 calls**.
+
+Verified by deleting all 876 exercises locally and re-seeding entirely over
+HTTP: back to 876 exercises and 5,104 attributes, byte-identical to what the CLI
+importer produces, with spot-checked attributes and image URLs. Re-running an
+overlapping batch twice changed nothing. Unauthenticated and wrong-token
+requests both get 401.
+
 ## Removed
 
 `wrangler.jsonc`, `open-next.config.ts`, `nextauth.d.ts` (augmenting a package

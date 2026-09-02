@@ -1,36 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { isOperator } from "@/shared/api/operator-auth";
 import { recomputeDailyStats } from "@/features/board/lib/recompute-daily-stats";
-import { env } from "@/env";
-import { serverAuth } from "@/entities/user/model/get-server-session-user";
 
 /**
  * Nightly rebuild of the DailyStat table.
  *
- * Authentication is either the `CRON_SECRET` bearer token (how the scheduler
- * calls it) or a signed-in session (how you run it by hand). With no
- * CRON_SECRET set only the session path works, so an unconfigured deployment
- * can't be poked by a stranger.
+ * Authentication is shared with the other maintenance routes — see
+ * `isOperator`.
  *
  * `?days=` sets the rebuild window; `?days=all` rebuilds the whole history.
  */
 
 export const dynamic = "force-dynamic";
 
-async function isAuthorized(request: NextRequest): Promise<boolean> {
-  const secret = env.CRON_SECRET;
-
-  if (secret) {
-    const header = request.headers.get("authorization");
-    if (header === `Bearer ${secret}`) return true;
-  }
-
-  const user = await serverAuth();
-  return Boolean(user);
-}
-
 export async function GET(request: NextRequest) {
-  if (!(await isAuthorized(request))) {
+  if (!(await isOperator(request))) {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
 

@@ -23,11 +23,10 @@ Note the region you pick, then set it in `app/layout.tsx`:
 `export const preferredRegion = ["lhr1"]` — currently London. Vercel and Neon
 being in different continents adds an ocean to every query.
 
-Apply the schema from your laptop:
-
-```sh
-DIRECT_URL="<direct-url>" DATABASE_URL="<pooled-url>" npx prisma migrate deploy
-```
+You don't need to apply the schema by hand: `vercel-build` runs
+`prisma migrate deploy` before every build, so the first successful deploy
+creates the tables. (Preview deploys run it too, against the same database —
+fine for two people, and the reason this isn't the usual advice.)
 
 ---
 
@@ -85,24 +84,33 @@ nightly rollup.
 
 ## 4. Seed the exercises
 
-876 exercises and ~5,100 attribute rows. Run it against the **direct** URL, from
-your laptop — it takes a few minutes and inserts one row at a time:
+876 exercises and ~5,100 attribute rows, from the browser — no terminal.
+
+1. Open the site and **sign in with Google** first. The endpoint accepts a
+   signed-in session, and only the two allowlisted accounts can have one.
+2. Visit `https://<your-domain>/api/admin/seed-exercises`
+3. It returns JSON with a `next` link. Open that. Repeat until you see
+   `"done": true`.
+
+That's about 6 clicks at the default batch size of 100. Locally the whole
+import takes ~3 seconds; over the internet, expect a few seconds per batch.
+
+It's safe to re-run or to repeat a batch — exercises are matched on their unique
+slug and attributes are rewritten rather than appended.
+
+If you'd rather do it in one command, the same endpoint takes the cron token:
 
 ```sh
-DATABASE_URL="<direct-url>" npx tsx scripts/import-exercises-with-attributes.ts ./data/exercises.csv
+curl -H "Authorization: Bearer $CRON_SECRET" "https://<domain>/api/admin/seed-exercises?offset=0"
 ```
 
-Safe to re-run: it upserts by slug. Do **not** use `pnpm db:seed`, which points
-at the 19-row French sample file.
-
 Accounts need no seeding — they create themselves on first Google sign-in.
-
----
 
 ## 5. Check it works
 
 From an actual phone, on mobile data rather than wifi.
 
+- [ ] Exercise search finds something — proof the seed worked.
 - [ ] Open the URL, tap **Sign in with Google**, land back signed in.
       If it bounces to `workout.cool`, `NEXT_PUBLIC_APP_URL` isn't set.
 - [ ] Add to home screen; it opens without browser chrome.

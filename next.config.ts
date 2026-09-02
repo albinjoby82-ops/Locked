@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  /**
+   * Nothing imports data/exercises.csv — the seed route reads it from disk — so
+   * Next's dependency tracing wouldn't otherwise ship it into the serverless
+   * function, and seeding would fail with ENOENT in production.
+   */
+  outputFileTracingIncludes: {
+    "/api/admin/seed-exercises": ["./data/exercises.csv"],
+  },
   images: {
     unoptimized: true,
     remotePatterns: [
