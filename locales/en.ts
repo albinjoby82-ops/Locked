@@ -428,6 +428,8 @@ export default {
   bottom_navigation: {
     statistics: "Statistics",
     statistics_tooltip: "View your statistics",
+    board: "Board",
+    board_tooltip: "Who's actually training",
     programs: "Programs",
     programs_tooltip: "Browse programs",
     workouts: "Workouts",

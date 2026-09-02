@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import { useI18n } from "locales/client";
 
 import { AVAILABLE_WORKOUT_SET_TYPES, MAX_WORKOUT_SET_COLUMNS } from "@/shared/constants/workout-set-types";
+import { WorkoutSessionSetCompact } from "@/features/workout-session/ui/workout-session-set-compact";
 import { WorkoutSet, WorkoutSetType, WorkoutSetUnit } from "@/features/workout-session/types/workout-set";
 import { getWorkoutSetTypeLabels } from "@/features/workout-session/lib/workout-set-labels";
 import { Button } from "@/components/ui/button";
@@ -9,15 +11,22 @@ import { Button } from "@/components/ui/button";
 interface WorkoutSetRowProps {
   set: WorkoutSet;
   setIndex: number;
+  /** The set before this one in the same exercise, shown as a placeholder to beat. */
+  previousSet?: WorkoutSet;
   onChange: (setIndex: number, data: Partial<WorkoutSet>) => void;
   onFinish: () => void;
   onRemove: () => void;
 }
 
-export function WorkoutSessionSet({ set, setIndex, onChange, onFinish, onRemove }: WorkoutSetRowProps) {
+export function WorkoutSessionSet({ set, setIndex, previousSet, onChange, onFinish, onRemove }: WorkoutSetRowProps) {
   const t = useI18n();
   const types = set.types || [];
   const typeLabels = getWorkoutSetTypeLabels(t);
+
+  // Reps and weight is what nearly every set is, and it fits on one row. The
+  // column editor below stays for everything else, and for when you want it.
+  const isSimpleSet = types.length > 0 && types.every((type) => type === "REPS" || type === "WEIGHT");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleTypeChange = (columnIndex: number) => (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTypes = [...types];
@@ -155,6 +164,22 @@ export function WorkoutSessionSet({ set, setIndex, onChange, onFinish, onRemove 
     }
   };
 
+  if (isSimpleSet && !showAdvanced) {
+    return (
+      <WorkoutSessionSetCompact
+        onChange={onChange}
+        onFinish={onFinish}
+        onRemove={onRemove}
+        onShowAdvanced={() => setShowAdvanced(true)}
+        previousSet={previousSet}
+        repsIndex={types.indexOf("REPS")}
+        set={set}
+        setIndex={setIndex}
+        weightIndex={types.indexOf("WEIGHT")}
+      />
+    );
+  }
+
   return (
     <div
       className={`w-full py-4 flex flex-col gap-2 rounded-xl shadow-sm mb-3 relative px-2 sm:px-4 transition-all duration-500 ${
@@ -173,6 +198,11 @@ export function WorkoutSessionSet({ set, setIndex, onChange, onFinish, onRemove 
         >
           {set.completed ? "✓" : ""} SET {setIndex + 1}
         </div>
+        {isSimpleSet ? (
+          <Button className="text-xs" onClick={() => setShowAdvanced(false)} size="small" type="button" variant="ghost">
+            Done
+          </Button>
+        ) : null}
         <Button
           aria-label="Supprimer la série"
           className="bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/60 text-red-600 dark:text-red-300 rounded-full p-1 h-8 w-8 flex items-center justify-center shadow transition"

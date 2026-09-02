@@ -52,6 +52,7 @@ interface WorkoutSessionState {
   getTotalVolumeInUnit: (unit: WeightUnit) => number;
   loadSessionFromLocal: () => void;
   addExerciseToSession: (exercise: ExerciseWithAttributes) => void;
+  removeExerciseFromSession: (exerciseId: string) => void;
 }
 
 export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => ({
@@ -462,9 +463,43 @@ export const useWorkoutSessionStore = create<WorkoutSessionState>((set, get) => 
     // Update local storage
     workoutSessionLocal.update(session.id, { exercises: updatedExercises });
 
-    // Update state
-    set({ session: updatedSession });
+    // A session can start empty, in which case this is the first exercise and
+    // there is nothing selected yet — point the session at it.
+    const wasEmpty = session.exercises.length === 0;
 
-    console.log("🟡 [WORKOUT-SESSION] Exercise added successfully to session");
+    set({
+      session: updatedSession,
+      ...(wasEmpty ? { currentExercise: newExercise, currentExerciseIndex: 0 } : {}),
+    });
+  },
+
+  /**
+   * Drop an exercise from a running session — the counterpart to adding one,
+   * for when you queue something and then change your mind.
+   *
+   * `order` is rewritten so it stays dense, and the cursor is clamped, because
+   * removing the exercise you were on would otherwise leave it pointing past
+   * the end of the list.
+   */
+  removeExerciseFromSession: (exerciseId) => {
+    const { session, currentExerciseIndex } = get();
+    if (!session) return;
+
+    const updatedExercises = session.exercises
+      .filter((exercise) => exercise.id !== exerciseId)
+      .map((exercise, index) => ({ ...exercise, order: index }));
+
+    if (updatedExercises.length === session.exercises.length) return;
+
+    const updatedSession = { ...session, exercises: updatedExercises };
+    workoutSessionLocal.update(session.id, { exercises: updatedExercises });
+
+    const nextIndex = Math.min(currentExerciseIndex, Math.max(0, updatedExercises.length - 1));
+
+    set({
+      session: updatedSession,
+      currentExerciseIndex: nextIndex,
+      currentExercise: updatedExercises[nextIndex] ?? null,
+    });
   },
 }));

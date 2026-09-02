@@ -12,4 +12,8 @@ const globalForPrisma = globalThis as unknown as {
 
 export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Cached in production too, not just dev. On a serverless host each instance
+// re-evaluates the module graph on cold start but reuses `globalThis` across
+// invocations, so skipping this lets clients — and Postgres connections —
+// accumulate per instance.
+globalForPrisma.prisma = prisma;

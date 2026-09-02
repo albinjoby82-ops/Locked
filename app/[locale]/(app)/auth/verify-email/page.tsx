@@ -1,7 +1,7 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { VerifyEmailPage } from "@/features/auth/verify-email/ui/verify-email-page";
-
-export default function VerifyEmailRootPage() {
-  return <VerifyEmailPage />;
+/** Dead route: Google has already verified the address. */
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect(`/${locale}/auth/signin`);
 }

@@ -7,7 +7,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Pooled, for the app: every serverless instance keeps its own pool.
+  url       = env("DATABASE_URL")
+  // Unpooled, for migrations and the exercise import. PgBouncer in transaction
+  // mode can hold neither Prisma's advisory locks nor its long transactions.
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -44,6 +48,10 @@ model User {
 
   // Training programs
   programEnrollments UserProgramEnrollment[]
+
+  // Board
+  dailyStats  DailyStat[]
+  stepEntries StepEntry[]
 
   @@map("user")
 }
@@ -320,16 +328,11 @@ model WorkoutSessionExercise {
   @@map("workout_session_exercises")
 }
 
-// TODO(step-2): WorkoutSet stores a set's values as parallel arrays
-// (valuesInt / valuesSec / units, indexed against `types`). That is flexible
-// for logging but painful to aggregate — computing weekly tonnage means
-// re-parsing every array on every read.
-//
-// Before building the comparison page and graphs, add a derived DailyStat
-// table (one row per user per day: tonnage, sets, sessions, steps) populated
-// by a nightly job, and read the graphs from that instead. It is derived
-// data, so it can always be dropped and rebuilt from the rows below.
-// See PLAN.md "What to strip from the base app".
+// WorkoutSet stores a set's values as parallel arrays (valuesInt / valuesSec /
+// units, indexed against `types`). That is flexible for logging but painful to
+// aggregate, so the comparison board and graphs never read it directly — they
+// read DailyStat, which src/features/board/lib/recompute-daily-stats.ts fills
+// from these rows. See PLAN.md.
 model WorkoutSet {
   id                       String                 @id @default(cuid())
   workoutSessionExerciseId String
@@ -351,6 +354,58 @@ enum WorkoutSetType {
   REPS
   BODYWEIGHT
   NA
+}
+
+// ========================================
+// BOARD — derived stats and steps
+// ========================================
+
+/// One row per user per day, derived entirely from WorkoutSession/WorkoutSet.
+/// Safe to delete and rebuild at any time; the recompute job is the only writer.
+model DailyStat {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Midnight UTC of the day being summarised.
+  day         DateTime @db.Date
+  /// Total weight moved, in kilograms: sum of reps x weight over completed sets.
+  tonnageKg   Float    @default(0)
+  /// Completed sets, and reps across those sets.
+  sets        Int      @default(0)
+  reps        Int      @default(0)
+  /// Sessions started on this day.
+  sessions    Int      @default(0)
+  /// Total logged session time, in seconds.
+  durationSec Int      @default(0)
+
+  computedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, day])
+  @@index([day])
+  @@map("daily_stats")
+}
+
+enum StepSource {
+  manual
+}
+
+/// Daily step count. Typed in by hand today; `source` exists so a real sync can
+/// be added later without touching anything that reads this table.
+model StepEntry {
+  id     String     @id @default(cuid())
+  userId String
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day    DateTime   @db.Date
+  steps  Int
+  source StepSource @default(manual)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, day])
+  @@index([day])
+  @@map("step_entries")
 }
 
 enum WorkoutSetUnit {

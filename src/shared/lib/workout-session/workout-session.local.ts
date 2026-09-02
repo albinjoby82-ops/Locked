@@ -1,7 +1,12 @@
 import type { WorkoutSession } from "./types/workout-session";
 
 const STORAGE_KEY = "workoutSessions";
-const MAX_SESSIONS = 10;
+/**
+ * `saveAll` keeps only the newest MAX_SESSIONS, so this is also the offline
+ * backlog depth: at 10, an eleventh unsynced workout silently dropped the
+ * oldest one. Raised so a long stretch without signal can't lose anything.
+ */
+const MAX_SESSIONS = 50;
 const CURRENT_SESSION_KEY = "currentWorkoutSessionId";
 
 function getAll(): WorkoutSession[] {

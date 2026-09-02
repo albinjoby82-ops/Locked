@@ -1,9 +1,10 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Check, Play, ArrowRight, Trophy as TrophyIcon, Plus, Hourglass } from "lucide-react";
+import { Check, Play, ArrowRight, Trophy as TrophyIcon, Plus, Hourglass, Trash2, Dumbbell } from "lucide-react";
 import { useCurrentLocale, useI18n } from "locales/client";
 import confetti from "canvas-confetti";
 import TrophyImg from "@public/images/trophy.png";
@@ -12,13 +13,13 @@ import { FavoriteExerciseButton } from "../../workout-builder/ui/favorite-exerci
 import { WorkoutSessionSet } from "./workout-session-set";
 
 import { cn } from "@/shared/lib/utils";
+import useBoolean from "@/shared/hooks/useBoolean";
 import { useWorkoutFeedback } from "@/shared/hooks/use-workout-feedback";
+import { ExercisePicker } from "@/features/workout-session/ui/exercise-picker";
 import { useWorkoutSession } from "@/features/workout-session/model/use-workout-session";
 import { useSyncWorkoutSessions } from "@/features/workout-session/model/use-sync-workout-sessions";
 import { ExerciseVideoModal } from "@/features/workout-builder/ui/exercise-video-modal";
 import { useSyncFavoriteExercises } from "@/features/workout-builder/hooks/use-sync-favorite-exercises";
-import { env } from "@/env";
-import { PremiumUpsellAlert } from "@/components/ui/premium-upsell-alert";
 import { Button } from "@/components/ui/button";
 import { HorizontalBottomBanner } from "@/components/ads";
 
@@ -34,8 +35,20 @@ export function WorkoutSessionSets({
   const t = useI18n();
   const router = useRouter();
   const locale = useCurrentLocale();
-  const { currentExerciseIndex, session, addSet, updateSet, removeSet, finishSet, goToNextExercise, goToExercise, completeWorkout } =
-    useWorkoutSession();
+  const {
+    currentExerciseIndex,
+    session,
+    addSet,
+    updateSet,
+    removeSet,
+    finishSet,
+    goToNextExercise,
+    goToExercise,
+    completeWorkout,
+    addExerciseToSession,
+    removeExerciseFromSession,
+  } = useWorkoutSession();
+  const exercisePicker = useBoolean(false);
   const exerciseDetailsMap = Object.fromEntries(session?.exercises.map((ex) => [ex.id, ex]) || []);
   const [videoModal, setVideoModal] = useState<{ open: boolean; exerciseId?: string }>({ open: false });
   const { syncSessions } = useSyncWorkoutSessions();
@@ -133,20 +146,25 @@ export function WorkoutSessionSets({
     finishSet(exerciseIdx, setIdx);
   };
 
-  const handleFinishSession = () => {
+  const handleFinishSession = async () => {
     feedback.onFinishWorkout();
     completeWorkout();
     syncFavoriteExercises();
-    syncSessions();
     onCongrats();
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+    // The celebration is honest either way — the workout is already safe in
+    // localStorage and the synchroniser retries every five minutes. What was
+    // missing is being told it hasn't reached the server yet, which on a phone
+    // with no signal is the difference between trusting the app and not.
+    const result = await syncSessions();
+    if (result.failed > 0) {
+      toast.error("Saved on this phone. It'll upload when you're back online.");
+    }
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto pb-8 px-3 sm:px-6">
-      <div className="mb-6">
-        <PremiumUpsellAlert />
-      </div>
+    <div className="w-full max-w-3xl mx-auto pb-[calc(7rem+env(safe-area-inset-bottom))] px-3 sm:px-6">
       <ol className="relative border-l-2 ml-2 border-slate-200 dark:border-slate-700">
         {session.exercises.map((ex, idx) => {
           const allSetsCompleted = ex.sets.length > 0 && ex.sets.every((set) => set.completed);
@@ -181,7 +199,10 @@ export function WorkoutSessionSets({
                   >
                     <Image
                       alt={exerciseName || "Exercise image"}
-                      className="w-full h-full object-cover scale-[1.35]"
+                      // text-[0px] keeps a broken image's alt text from spilling out
+                      // over the exercise name; the alt attribute still reaches
+                      // screen readers.
+                      className="w-full h-full object-cover scale-[1.35] text-[0px]"
                       height={48}
                       src={details.fullVideoImageUrl}
                       width={48}
@@ -214,6 +235,20 @@ export function WorkoutSessionSets({
                     </span>
                   )}
                 </div>
+
+                {/* Drop an exercise you queued and then thought better of. */}
+                <Button
+                  aria-label={`Remove ${exerciseName ?? "exercise"} from this workout`}
+                  className="shrink-0 text-slate-400 hover:text-red-600"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeExerciseFromSession(ex.id);
+                  }}
+                  size="icon"
+                  variant="ghost"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
               {/* Modale vidéo */}
               {details && details.fullVideoUrl && videoModal.open && videoModal.exerciseId === ex.id && (
@@ -231,6 +266,16 @@ export function WorkoutSessionSets({
                     <FavoriteExerciseButton exerciseId={ex.id} />
                   </div>
                   <div className="space-y-10 mb-8">
+                    {/* Column header, so the two bare number boxes in each compact row are labelled. */}
+                    {ex.sets.some((set) => (set.types || []).every((type) => type === "REPS" || type === "WEIGHT")) && (
+                      <div className="mb-1 flex items-center gap-2 px-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                        <span className="w-7 shrink-0 text-center">Set</span>
+                        <span className="flex-1 text-center">Weight</span>
+                        <span className="w-[3.5rem] shrink-0" />
+                        <span className="flex-1 text-center">Reps</span>
+                        <span className="w-[86px] shrink-0" />
+                      </div>
+                    )}
                     {ex.sets.map((set, setIdx) => (
                       <WorkoutSessionSet
                         key={set.id}
@@ -240,6 +285,7 @@ export function WorkoutSessionSets({
                           feedback.onDelete();
                           removeSet(idx, setIdx);
                         }}
+                        previousSet={setIdx > 0 ? ex.sets[setIdx - 1] : undefined}
                         set={set}
                         setIndex={setIdx}
                       />
@@ -270,7 +316,36 @@ export function WorkoutSessionSets({
           );
         })}
       </ol>
+      {session.exercises.length === 0 && (
+        <div className="flex flex-col items-center gap-3 py-14 text-center">
+          <Dumbbell className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+          <p className="text-slate-500 dark:text-slate-400">This workout is empty. Add the first exercise.</p>
+        </div>
+      )}
+
       {isWorkoutActive && (
+        <div className="flex justify-center">
+          <Button
+            className="flex items-center gap-2"
+            onClick={exercisePicker.setTrue}
+            size="large"
+            type="button"
+            variant="outline-general"
+          >
+            <Plus className="h-5 w-5" />
+            Add exercise
+          </Button>
+        </div>
+      )}
+
+      <ExercisePicker
+        addedExerciseIds={session.exercises.map((exercise) => exercise.id)}
+        isOpen={exercisePicker.value}
+        onAdd={addExerciseToSession}
+        onClose={exercisePicker.setFalse}
+      />
+
+      {isWorkoutActive && session.exercises.length > 0 && (
         <div className="flex justify-center mt-8 mb-24">
           <Button
             aria-label={t("workout_builder.session.finish_session")}

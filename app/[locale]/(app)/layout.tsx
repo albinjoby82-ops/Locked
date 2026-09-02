@@ -14,7 +14,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     <div className="mx-auto card w-full max-w-3xl min-h-[500px] max-sm:min-h-screen bg-white dark:bg-[#232324] shadow-xl border border-base-200 dark:border-slate-700 flex flex-col max-sm:rounded-none rounded-lg">
       <Header />
       {/* pb-16 clears the docked BottomNavigation, which is fixed at every width. */}
-      <div className="flex-1 flex flex-col pb-16">{children}</div>
+      <div className="flex-1 flex flex-col pb-[calc(4rem+env(safe-area-inset-bottom))]">{children}</div>
       <BottomNavigation />
       <Footer />
     </div>

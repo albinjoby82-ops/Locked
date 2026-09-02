@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "locales/client";
 import { useMutation } from "@tanstack/react-query";
@@ -39,11 +40,21 @@ export const ProviderButton = (props: ProviderButtonProps) => {
       const defaultAction = props.action === "signup" ? "signup" : "signin";
       const defaultCallback = `${getServerUrl()}/?${defaultAction}=true`;
       
-      await authClient.signIn.social({
+      const { error } = await authClient.signIn.social({
         provider: "google",
         callbackURL: redirectUrl || callbackUrl || defaultCallback,
+        // The allowlist hook throws inside the OAuth callback, and better-auth
+        // answers that with a redirect rather than JSON. Without somewhere of
+        // our own to send it, a refused account lands on a bare better-auth
+        // error page instead of being told why.
+        errorCallbackURL: `${getServerUrl()}/auth/signin?error=not_allowed`,
       });
+
+      if (error) throw new Error(error.message ?? "Sign-in failed.");
     },
+    // Without this a failure is completely silent: the spinner stops and
+    // nothing else happens.
+    onError: (error: Error) => toast.error(error.message || "Could not sign in with Google."),
   });
 
   const data = ProviderData[props.providerId];

@@ -1,9 +1,10 @@
 import { MetadataRoute } from "next/types";
 
+import { getServerUrl } from "@/shared/lib/server-url";
 import { getSitemapData } from "@/features/programs/actions/get-sitemap-data.action";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://www.workout.cool";
+  const baseUrl = getServerUrl();
   const currentDate = new Date().toISOString();
 
   // Static routes with locale support

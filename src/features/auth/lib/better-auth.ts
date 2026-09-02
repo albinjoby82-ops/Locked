@@ -1,12 +1,11 @@
 import { admin, customSession } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
+import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { betterAuth } from "better-auth";
-import { APIError } from "better-auth/api";
 
+import { getServerUrl } from "@/shared/lib/server-url";
 import { prisma } from "@/shared/lib/prisma";
-import { sendEmail } from "@/shared/lib/mail/sendEmail";
-import { hashStringWithSalt } from "@/features/update-password/lib/hash";
 import { env } from "@/env";
 
 /**
@@ -16,6 +15,11 @@ import { env } from "@/env";
  * Set ALLOWED_EMAILS to a comma-separated list of the two addresses. The check
  * runs on user creation, so sign-in needs no separate guard: an address that
  * was never allowed to create an account has nothing to sign in to.
+ *
+ * It is provider-agnostic — the hook sits in the adapter path, so a Google
+ * sign-in by a stranger is refused at exactly the same point a password signup
+ * would have been. It deliberately does not fire when an existing user links a
+ * second provider: they already passed the allowlist when the account was made.
  */
 export const ALLOWED_EMAILS = env.ALLOWED_EMAILS.split(",")
   .map((email) => email.trim().toLowerCase())
@@ -27,7 +31,9 @@ export function isAllowedEmail(email: string | null | undefined): boolean {
 }
 
 export const auth = betterAuth({
-  trustedOrigins: ["*"],
+  // Upstream shipped ["*"], which turns off better-auth's origin check
+  // altogether. Harmless on localhost, not on a public URL.
+  trustedOrigins: [getServerUrl(), "http://localhost:3000"],
   plugins: [
     admin(),
     customSession(async ({ user, session }) => {
@@ -80,29 +86,47 @@ export const auth = betterAuth({
   },
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   session: {
+    /**
+     * Staying signed in on a phone is `expiresIn`, not the cookie cache — the
+     * cache is a signed snapshot that skips the database, so a long one keeps
+     * honouring a session that has already expired or been revoked. Upstream
+     * had a 30-day cache over a 7-day session, which is backwards.
+     */
+    expiresIn: 60 * 60 * 24 * 90,
+    updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 5,
     },
   },
   emailVerification: {
     autoSignInAfterVerification: true,
     sendOnSignUp: false,
   },
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      // Always ask which account — we occasionally share a laptop.
+      prompt: "select_account",
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+    },
+  },
+  /**
+   * Passwords are off.
+   *
+   * Upstream replaced better-auth's scrypt with a single SHA salted by
+   * BETTER_AUTH_SECRET — one global salt, no per-user salt, no KDF, so one
+   * database leak cracks both accounts at once, and rainbow-tables across them
+   * because the salt never varies. Google sign-in suits a phone better anyway,
+   * so the fix is to delete the password path rather than re-hash it.
+   */
   emailAndPassword: {
-    requireEmailVerification: false,
-    sendResetPassword: async ({ user, url }) => {
-      // Email is disabled; sendEmail logs the link to the server console.
-      await sendEmail({
-        to: user.email,
-        subject: "Reset your password",
-        text: `Click the link to reset your password: ${url}`,
-      });
-    },
-    password: {
-      hash: async (password: string) => hashStringWithSalt(password, env.BETTER_AUTH_SECRET),
-      verify: async ({ password, hash }) => hashStringWithSalt(password, env.BETTER_AUTH_SECRET) === hash,
-    },
-    enabled: true,
+    enabled: false,
   },
 });

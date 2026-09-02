@@ -1,12 +1,8 @@
-import { Inter, Permanent_Marker } from "next/font/google";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import { Providers } from "app/[locale]/providers";
 
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 
-import { cn } from "@/shared/lib/utils";
 import { generateStructuredData, StructuredDataScript } from "@/shared/lib/structured-data";
 import { getServerUrl } from "@/shared/lib/server-url";
 import { SiteConfig } from "@/shared/config/site-config";
@@ -14,14 +10,11 @@ import { getLocalizedMetadata } from "@/shared/config/localized-metadata";
 import { WorkoutSessionsSynchronizer } from "@/features/workout-session/ui/workout-sessions-synchronizer";
 import { FavoriteExercisesSynchronizer } from "@/features/workout-builder/model/favorite-exercises-synchronizer";
 import { ThemeSynchronizer } from "@/features/theme/ui/ThemeSynchronizer";
-import { env } from "@/env";
 import { Version } from "@/components/version";
 import { TailwindIndicator } from "@/components/utils/TailwindIndicator";
 import { NextTopLoader } from "@/components/ui/next-top-loader";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { VerticalLeftBanner, VerticalRightBanner, AdBlockerForPremium } from "@/components/ads";
-
-import "@/shared/styles/globals.css";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -161,17 +154,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         },
       ],
     },
+    // English-only and private, so there is nothing to offer alternates for.
     alternates: {
-      canonical: "https://www.workout.cool",
-      languages: {
-        "fr-FR": "https://www.workout.cool/fr",
-        "en-US": "https://www.workout.cool/en",
-        "es-ES": "https://www.workout.cool/es",
-        "pt-PT": "https://www.workout.cool/pt",
-        "ru-RU": "https://www.workout.cool/ru",
-        "zh-CN": "https://www.workout.cool/zh-CN",
-        "x-default": "https://www.workout.cool",
-      },
+      canonical: getServerUrl(),
     },
     authors: [{ name: SiteConfig.company.name, url: getServerUrl() }],
     creator: SiteConfig.company.name,
@@ -202,174 +187,49 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const permanentMarker = Permanent_Marker({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-permanent-marker",
-  display: "swap",
-});
-
-export const preferredRegion = ["fra1", "sfo1", "iad1"];
-
 interface RootLayoutProps {
   params: Promise<{ locale: string }>;
   children: ReactNode;
 }
 
-export default async function RootLayout({ params, children }: RootLayoutProps) {
+/**
+ * Locale layout. The real <html>/<body> live in app/layout.tsx — this one only
+ * mounts the client providers and the locale-specific head tags, so the
+ * synthetic /_global-error and /_not-found pages (which render outside any
+ * [locale] value) never depend on this context.
+ */
+export default async function LocaleLayout({ params, children }: RootLayoutProps) {
   const { locale } = await params;
-  // Generate structured data
-  const websiteStructuredData = generateStructuredData({
-    type: "WebSite",
-    locale,
-  });
 
-  const organizationStructuredData = generateStructuredData({
-    type: "Organization",
-    locale,
-  });
-
-  const webAppStructuredData = generateStructuredData({
-    type: "WebApplication",
-    locale,
-  });
+  const websiteStructuredData = generateStructuredData({ type: "WebSite", locale });
+  const organizationStructuredData = generateStructuredData({ type: "Organization", locale });
+  const webAppStructuredData = generateStructuredData({ type: "WebApplication", locale });
 
   return (
-    <>
-      <html className="h-full" dir="ltr" lang={locale} suppressHydrationWarning>
-        <head>
-          <meta charSet="UTF-8" />
-          <meta content="width=device-width, initial-scale=1, maximum-scale=1 viewport-fit=cover" name="viewport" />
-          {/* {undefined !== "custom" && ( */}
-          <>
-            <meta content={undefined} name="google-adsense-account" />
+    <Providers locale={locale}>
+      <link href={`/${locale}/manifest.json`} rel="manifest" />
 
-            <script
-              async
-              crossOrigin="anonymous"
-              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${undefined}`}
-            />
+      <StructuredDataScript data={websiteStructuredData} />
+      <StructuredDataScript data={organizationStructuredData} />
+      <StructuredDataScript data={webAppStructuredData} />
 
-            {/* Ezoic Privacy Scripts */}
-            <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js" />
-            <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js" />
+      <ServiceWorkerRegistration />
+      <FavoriteExercisesSynchronizer />
+      <WorkoutSessionsSynchronizer />
+      <ThemeSynchronizer />
+      <AdBlockerForPremium />
+      <NextTopLoader color="#FF5722" delay={100} showSpinner={false} />
 
-            {/* Ezoic Header Script */}
-            <script async src="//www.ezojs.com/ezoic/sa.min.js" />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                    window.ezstandalone = window.ezstandalone || {};
-                    ezstandalone.cmd = ezstandalone.cmd || [];
-                    ezstandalone.cmd.push(function() {
-                      ezstandalone.enable();
-                      ezstandalone.initRewardedAds({
-                        anchor: true,
-                        interstitial: true,
-                        video: true,
-                        sideRails: true
-                      });
-                    });
-                    window.ezRewardedAds = window.ezRewardedAds || {};
-                    window.ezRewardedAds.cmd = window.ezRewardedAds.cmd || [];
-                  `,
-              }}
-            />
-          </>
-          {/* )} */}
+      <div className="flex items-center justify-center min-h-screen w-full max-sm:min-h-full">
+        <div className="flex items-start gap-2 w-full max-sm:gap-0 justify-center">
+          <VerticalLeftBanner />
+          <div className="min-w-0 sm:min-w-auto w-full sm:w-auto">{children}</div>
+          <VerticalRightBanner />
+        </div>
+      </div>
+      <Version />
 
-          {/* PWA Meta Tags */}
-          <meta content="yes" name="apple-mobile-web-app-capable" />
-          <meta content="default" name="apple-mobile-web-app-status-bar-style" />
-          <meta content="Workout Cool" name="apple-mobile-web-app-title" />
-          <meta content="yes" name="mobile-web-app-capable" />
-          <meta content="#FF5722" name="msapplication-TileColor" />
-          <meta content="/android-chrome-192x192.png" name="msapplication-TileImage" />
-
-          {/* PWA Manifest */}
-          <link href={`/${locale}/manifest.json`} rel="manifest" />
-
-          <link as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="preload" />
-
-          {/* Alternate hreflang for i18n */}
-          <link href="https://www.workout.cool/fr" hrefLang="fr" rel="alternate" />
-          <link href="https://www.workout.cool/en" hrefLang="en" rel="alternate" />
-          <link href="https://www.workout.cool/es" hrefLang="es" rel="alternate" />
-          <link href="https://www.workout.cool/pt" hrefLang="pt" rel="alternate" />
-          <link href="https://www.workout.cool/ru" hrefLang="ru" rel="alternate" />
-          <link href="https://www.workout.cool/zh-CN" hrefLang="zh-CN" rel="alternate" />
-          <link href="https://www.workout.cool" hrefLang="x-default" rel="alternate" />
-
-          {/* Theme color for PWA */}
-          <meta content="#FF5722" name="theme-color" />
-
-          {/* Impact site verification */}
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-ignore */}
-          <meta name="impact-site-verification" value="e6afc3fc-0dcd-4625-a8cd-282991d40164" />
-
-          {/* Google Analytics 4 */}
-          {(false as boolean) && (
-            <>
-              <script async src={`https://www.googletagmanager.com/gtag/js?id=${undefined}`} />
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', '${undefined}');
-                  `,
-                }}
-              />
-            </>
-          )}
-
-          {/* Structured Data */}
-          <StructuredDataScript data={websiteStructuredData} />
-          <StructuredDataScript data={organizationStructuredData} />
-          <StructuredDataScript data={webAppStructuredData} />
-        </head>
-
-        <body
-          className={cn(
-            "flex items-center justify-center min-h-screen w-full max-sm:p-0 max-sm:min-h-full bg-base-200 dark:bg-[#18181b] dark:text-gray-200 antialiased",
-            "bg-hero-light dark:bg-hero-dark",
-            GeistMono.variable,
-            GeistSans.variable,
-            inter.variable,
-            permanentMarker.variable,
-          )}
-          suppressHydrationWarning
-        >
-          <Providers locale={locale}>
-            <ServiceWorkerRegistration />
-            <FavoriteExercisesSynchronizer />
-            <WorkoutSessionsSynchronizer />
-            <ThemeSynchronizer />
-            {/* <AdSenseAutoAds /> */}
-            <AdBlockerForPremium />
-            <NextTopLoader color="#FF5722" delay={100} showSpinner={false} />
-
-            <div className="flex items-center justify-center min-h-screen w-full max-sm:min-h-full">
-              <div className="flex items-start gap-2 w-full max-sm:gap-0 justify-center">
-                <VerticalLeftBanner />
-                <div className="min-w-0 sm:min-w-auto w-full sm:w-auto">{children}</div>
-                <VerticalRightBanner />
-              </div>
-            </div>
-            <Version />
-
-            <TailwindIndicator />
-          </Providers>
-        </body>
-      </html>
-    </>
+      <TailwindIndicator />
+    </Providers>
   );
 }
