@@ -26,13 +26,25 @@ Why this one:
 - Shipped the pieces a Hevy clone needs: exercise database, workout builder,
   session logging, progress tracking, auth, and a Prisma/Postgres schema.
 
+## Exercise data
+
+`data/exercises.csv` — 876 exercises — is generated from
+[free-exercise-db](https://github.com/yuhonas/free-exercise-db) by
+`scripts/build-exercise-csv.ts`. That dataset is released under the Unlicense
+(public domain), so it can be redistributed here freely. Exercise photos are
+hotlinked from the same repo rather than vendored. See `NOTES.md` for the
+field mapping.
+
+`data/sample-exercises.csv` is upstream's 3-exercise French sample, kept only as
+a reference for the importer's CSV format.
+
 ## Running it
 
 ```sh
 cp .env.example .env      # fill in DATABASE_URL and ALLOWED_EMAILS
 pnpm install
 npx prisma migrate deploy
-npx tsx scripts/import-exercises-with-attributes.ts ./data/sample-exercises.csv
+npx tsx scripts/import-exercises-with-attributes.ts ./data/exercises.csv
 pnpm dev
 ```
 

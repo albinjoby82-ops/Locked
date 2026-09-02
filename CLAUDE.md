@@ -27,6 +27,9 @@ and are background, not instructions.
   otherwise.
 - Server Components by default; `"use client"` only where needed.
 - Server Actions via `next-safe-action`, client state via `@tanstack/react-query`.
+- **Exercise data**: `data/exercises.csv` (876 exercises, generated from the
+  public-domain free-exercise-db by `scripts/build-exercise-csv.ts`). Photos are
+  hotlinked from that repo, not vendored.
 - **Prisma + PostgreSQL** — schema at `prisma/schema.prisma`. Postgres, not
   SQLite/D1: the schema relies on scalar list columns.
 - **Auth**: better-auth, email + password only, gated by an `ALLOWED_EMAILS`

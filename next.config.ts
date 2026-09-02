@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
     remotePatterns: [
+      // Exercise photos from free-exercise-db (see scripts/build-exercise-csv.ts).
+      { protocol: "https", hostname: "raw.githubusercontent.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "http", hostname: "192.168.1.12" },
       { protocol: "http", hostname: "localhost" },

@@ -109,18 +109,58 @@ the subscription models were being removed anyway, I replaced the migrations
 directory with a single baseline, `init_two_user_build`. Upstream migration
 history isn't worth preserving in a snapshot.
 
-### The exercise database is nearly empty
+### The exercise database
 
 ⚠️ **PLAN.md discrepancy.** PLAN.md calls the exercise database "the genuinely
-valuable part" we're inheriting. What's actually vendored is
-`data/sample-exercises.csv` — **19 lines, 3 exercises**, and the names and
-descriptions are in French (upstream is a French project).
+valuable part" we're inheriting. What was actually vendored is
+`data/sample-exercises.csv` — **19 lines, 3 exercises**, with names and
+descriptions in French (upstream is a French project). The real dataset was
+never in the repo.
 
-The real dataset is not in the repo. Before Step 1 counts as usable in a gym,
-someone needs to source a proper exercise list. This does not block anything
-technically — the schema and import script work fine — but it does mean the app
-is not yet usable for real training. Worth deciding early whether to find an
-open dataset or hand-write the 40 or so lifts you two actually do.
+**Fixed by sourcing one.** `data/exercises.csv` now holds **876 exercises**,
+built from [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
+(Unlicense — public domain, no attribution required). It's English, actively
+mirrored, and carries exactly the fields this schema wants: primary/secondary
+muscles, equipment, mechanics, category, step-by-step instructions and two
+photos per exercise.
+
+`scripts/build-exercise-csv.ts` converts that dataset into the CSV shape the
+vendored importer already reads, so nothing about the import path changed:
+
+```sh
+npx tsx scripts/build-exercise-csv.ts                                  # data/exercises.csv
+npx tsx scripts/import-exercises-with-attributes.ts ./data/exercises.csv
+```
+
+The CSV is committed, so a fresh setup needs no network beyond the database.
+Re-run the build script only to pick up upstream changes.
+
+Mapping notes, since the two vocabularies aren't identical:
+
+- `lower back` and `middle back` both fold into `BACK` (the schema has no
+  finer-grained back muscle), de-duplicated so an exercise never gets `BACK`
+  twice.
+- `olympic weightlifting` → `WEIGHTLIFTING`, `exercise ball` → `SWISS_BALL`,
+  `e-z curl bar` → `EZ_BAR`.
+- Equipment `None` becomes `NONE`, which the importer normalises to `NA`.
+- A muscle listed as both primary and secondary is recorded once, as primary.
+- The dataset has no prose intro, so `introduction` is a generated one-liner
+  ("A beginner strength exercise targeting the Quadriceps, using barbell.").
+- `level` and `force` are dropped — the schema has nowhere to put them.
+
+**Photos are hotlinked**, not vendored: `fullVideoImageUrl` points at
+`raw.githubusercontent.com/yuhonas/free-exercise-db/...`. ~1,700 JPEGs would
+add well over 100 MB to the repo for a two-person app. `next.config.ts` allows
+that host. If it ever goes away, the fix is to download `exercises/` from the
+dataset into `public/` and change `IMAGE_BASE` in the build script.
+
+**[call]** free-exercise-db over the alternatives (wger's API, ExerciseDB on
+RapidAPI): public domain rather than a licence to reason about, a plain JSON
+file rather than an API key and a rate limit, and its field vocabulary is
+near-identical to the enums this schema already ships.
+
+Verified end-to-end against a local Postgres: `prisma migrate deploy` then the
+importer → **876 exercises, 5,104 attributes, 0 errors**.
 
 ---
 
@@ -228,7 +268,7 @@ cp .env.example .env      # set ALLOWED_EMAILS to the two real addresses
 docker compose up -d      # or any local Postgres
 pnpm install
 npx prisma migrate deploy
-npx tsx scripts/import-exercises-with-attributes.ts ./data/sample-exercises.csv
+npx tsx scripts/import-exercises-with-attributes.ts ./data/exercises.csv
 pnpm dev
 ```
 
