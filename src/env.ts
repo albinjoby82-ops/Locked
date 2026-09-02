@@ -17,6 +17,12 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(1),
     /** Comma-separated list of the only email addresses allowed to hold an account. */
     ALLOWED_EMAILS: z.string().min(1),
+    /**
+     * Shared secret for /api/cron/daily-stats. Optional: when it is unset the
+     * route only accepts a signed-in user, which is enough to run the rebuild
+     * by hand in development.
+     */
+    CRON_SECRET: z.string().min(1).optional(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),

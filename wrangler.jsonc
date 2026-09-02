@@ -12,8 +12,14 @@
   },
   "observability": {
     "enabled": true
+  },
+  // Nightly rebuild of the derived DailyStat table, at 03:15 UTC. The Worker's
+  // scheduled handler has to call /api/cron/daily-stats with the CRON_SECRET
+  // bearer token — see NOTES.md.
+  "triggers": {
+    "crons": ["15 3 * * *"]
   }
   // Secrets are NOT set here. Push them with `wrangler secret put <NAME>`:
-  //   DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL, ALLOWED_EMAILS
+  //   DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL, ALLOWED_EMAILS, CRON_SECRET
   // NEXT_PUBLIC_APP_URL is inlined at build time, so set it in the build env.
 }

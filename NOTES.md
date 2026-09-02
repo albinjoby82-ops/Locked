@@ -237,12 +237,112 @@ though Next doesn't use it for the synthetic route.
 Verified: `pnpm build` completes, and `pnpm lint` is clean (24 warnings, 0
 errors — the warnings are inherited).
 
+---
+
+# Step 2 — the comparison board and the graphs
+
+Everything PLAN.md asks for in Step 2 is built and verified against a real
+Postgres with two seeded users and twelve weeks of sessions.
+
+## The board — `/[locale]/board`
+
+The four lines, per week, exactly as PLAN.md words them: sessions, total weight
+lifted, daily step average, and current streak (weeks with 3+ sessions).
+Whoever takes more of the four takes the week; there is no weighting and no
+composite score, because the plan explicitly doesn't want one. Ties go to
+nobody. The running **weeks-won** count is the biggest number on the page.
+
+Details worth knowing:
+
+- **Streaks.** A finished week under three sessions breaks the streak. The
+  *current* week is the exception — two sessions in a week that isn't over
+  hasn't broken anything, so the count picks up from the week before
+  (`streakAt(..., inProgress)`).
+- **Step averages** are over the days actually recorded, not over seven.
+  Averaging over seven would just punish whoever hasn't typed the number in yet.
+- **Weeks nobody logged anything in** aren't counted as won by anyone.
+- **Everything is UTC.** Two people in two timezones would otherwise disagree
+  about which day a late-evening session belongs to, and the `DATE` columns have
+  no timezone to fall back on.
+
+## The graphs
+
+All of them put both people on the same axes — never a second y-axis:
+
+- weight lifted per week, and sessions per week (grouped bars, 12 weeks)
+- estimated 1RM per week on the main lifts (lines, Epley `weight * (1 + reps / 30)`
+  as the plan names it). "Main lifts" is picked from the data — the exercises
+  with the most weighted sets logged across both of us — rather than a hardcoded
+  list of names.
+- daily steps over 30 days (a line, not 60 bars; a day nobody typed in is a gap,
+  not a zero)
+- the calendar grid: one square per day per person over six months, shaded by
+  tonnage. PLAN.md calls this "the one that makes it obvious when someone's
+  disappeared for two weeks", so empty squares matter as much as full ones.
+
+Person colours are fixed by join order and validated for colour-blind
+separation, chroma, lightness band and contrast, with a separate dark-mode step
+(`src/features/board/lib/palette.ts`). Every chart carries a legend, so identity
+never rests on colour alone.
+
+## `WorkoutSet` flattening — done
+
+The deferred `TODO(step-2)` is closed. `DailyStat` holds one row per user per
+day (tonnage, sets, reps, sessions, duration) and the board reads it instead of
+re-parsing the parallel arrays.
+
+- `src/features/board/lib/set-values.ts` is now the **only** place that knows
+  the `types`/`valuesInt`/`valuesSec`/`units` layout. It handles the lbs → kg
+  conversion the parallel arrays encode per column (verified: 10 × 100 lbs adds
+  453.6 kg).
+- `recomputeDailyStats()` deletes and rewrites the window it rebuilds rather
+  than doing incremental bookkeeping — the table is derived, so a full rebuild
+  is always safe and an edited or deleted session can never leave a stale row.
+- **Today is read live**, not from DailyStat, so a session logged this morning
+  shows on the board this morning instead of after the next cron run. Both paths
+  share `aggregateSessions()`, so they can't drift.
+
+Rebuild by hand any time: `GET /api/cron/daily-stats?days=all`.
+
+## Steps
+
+Typed in, one number a day, into `StepEntry` with `source = "manual"` — the
+column exists so a real sync can be added later without touching anything that
+reads the table. Step 3 territory; see PLAN.md on why the Fitbit/Google Health
+ground is still moving.
+
+## The nightly job
+
+`GET /api/cron/daily-stats`, authenticated by either a `CRON_SECRET` bearer
+token or a signed-in session. With no `CRON_SECRET` set only the session path
+works, so an unconfigured deployment can't be poked by a stranger.
+`wrangler.jsonc` schedules it at 03:15 UTC — note the Worker's scheduled handler
+still has to actually call the route with the bearer token when you deploy.
+
+## Navigation
+
+The bottom nav pointed at `/tools`, `/leaderboard` and `/premium`, all of which
+were deleted in Step 1 — three dead links. Replaced with **Board**, and the
+premium styling branches went with them.
+
+## Verified
+
+Against a local Postgres, two users, 12 weeks of sessions and daily steps:
+
+```
+weeks won            12–0
+this week            3–1 (sessions, tonnage and streak to one; steps to the other)
+streak               11 weeks vs 0
+today, pre-cron      session count rises live, without a rebuild
+10 reps x 100 lbs    +453.6 kg
+pnpm build           passes
+pnpm lint            0 errors
+```
+
+Both themes were rendered in a browser and eyeballed.
+
 ## Smaller things deferred
 
-- **`WorkoutSet` flattening** — left as a `TODO(step-2)` comment in
-  `prisma/schema.prisma` above the model, as instructed. The plan is a derived
-  `DailyStat` table (one row per user per day) filled by a nightly job, so the
-  graphs never re-parse the parallel arrays. Not needed for logging.
 - **Turbopack workspace-root warning** on every `next dev`, left over from when
   this lived under a portfolio repo with its own `package-lock.json` above it.
   Should be gone now that this is its own repo; if it isn't, set
@@ -256,8 +356,8 @@ errors — the warnings are inherited).
 ## Design handoff
 
 The "Locked In" bundle is unpacked into `docs/design/`, and its equipment icons
-and trophy art into `public/images/`. Everything it specifies (Dashboard, Board,
-roast mode) is Step 2 — nothing from it is wired up. Note it assumes a React
+and trophy art into `public/images/`. The board is built to the plan rather than
+to that bundle — its Dashboard/Board layouts and roast mode are still unused. Note it assumes a React
 Native app; we're a Next.js web app, so it's a visual reference, not a spec to
 follow literally.
 

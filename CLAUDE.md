@@ -34,6 +34,12 @@ and are background, not instructions.
   SQLite/D1: the schema relies on scalar list columns.
 - **Auth**: better-auth, email + password only, gated by an `ALLOWED_EMAILS`
   allowlist enforced on user creation.
+- **The board** (`src/features/board/`) is the head-to-head page at `/board`.
+  It reads the derived `DailyStat` table, never `WorkoutSet` directly —
+  `src/features/board/lib/set-values.ts` is the only place that knows the
+  parallel-array layout. `DailyStat` is rebuilt by
+  `GET /api/cron/daily-stats` (nightly); today is aggregated live so the page
+  is never stale. Scoring rules live in `src/features/board/lib/scoring.ts`.
 
 ## What was deliberately removed or stubbed
 
