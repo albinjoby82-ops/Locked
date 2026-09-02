@@ -34,6 +34,11 @@ and are background, not instructions.
   SQLite/D1: the schema relies on scalar list columns.
 - **Auth**: better-auth, email + password only, gated by an `ALLOWED_EMAILS`
   allowlist enforced on user creation.
+- **The logger**: `src/features/workout-builder/` is the optional
+  equipment→muscles→exercises wizard; `src/features/workout-session/` is the
+  actual session. A workout can start empty and gain exercises from
+  `ExercisePicker` (search over the whole database). Sets render compact
+  (reps × weight) with the full column editor behind the ⋯ button.
 - **The board** (`src/features/board/`) is the head-to-head page at `/board`.
   It reads the derived `DailyStat` table, never `WorkoutSet` directly —
   `src/features/board/lib/set-values.ts` is the only place that knows the
@@ -46,6 +51,12 @@ and are background, not instructions.
 Monetisation, ads, analytics and transactional email are gone or stubbed to
 no-ops so the app needs no third-party secrets. Don't reintroduce them. Details
 in `NOTES.md`.
+
+## Gotcha: locale keys
+
+`locales/en.ts` sits at next-international's type-inference limit. Adding one
+more key breaks `t()` typechecking across the whole app. Write new UI strings
+as literals — the app is English-only.
 
 ## Commands
 

@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 
+import { WorkoutsDone } from "@/features/board/ui/workouts-done";
 import { StepEntryForm } from "@/features/board/ui/step-entry-form";
 import { Scoreboard } from "@/features/board/ui/scoreboard";
 import { HeadToHead } from "@/features/board/ui/head-to-head";
 import { BoardGraphs } from "@/features/board/ui/board-graphs";
+import { getRecentWorkouts, getWorkoutCounts } from "@/features/board/model/get-workout-counts";
 import { getBoardData } from "@/features/board/model/get-board-data";
 import { toDayKey } from "@/features/board/lib/dates";
 import { serverAuth } from "@/entities/user/model/get-server-session-user";
@@ -28,6 +30,7 @@ export default async function BoardPage({ params }: { params: Promise<{ locale: 
   if (!user) redirect(`/${locale}/auth/signin`);
 
   const data = await getBoardData(user.id);
+  const [workoutCounts, recentWorkouts] = await Promise.all([getWorkoutCounts(data.people), getRecentWorkouts()]);
   const today = toDayKey(new Date());
 
   return (
@@ -45,6 +48,8 @@ export default async function BoardPage({ params }: { params: Promise<{ locale: 
         <h2 className="pt-2 text-sm font-semibold text-gray-900 dark:text-white">This week</h2>
         <HeadToHead people={data.people} week={data.thisWeek} />
       </section>
+
+      <WorkoutsDone counts={workoutCounts} people={data.people} recent={recentWorkouts} />
 
       <section className="rounded-lg border border-base-200 bg-base-100 p-4 dark:border-slate-700 dark:bg-[#1c1c1e]">
         <StepEntryForm day={today} initialSteps={data.todaySteps} />

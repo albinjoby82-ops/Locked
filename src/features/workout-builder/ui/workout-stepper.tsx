@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useQueryState } from "nuqs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Plus } from "lucide-react";
 import { useI18n } from "locales/client";
 import Trophy from "@public/images/trophy.png";
 import { ExerciseAttributeValueEnum } from "@prisma/client";
@@ -24,7 +25,6 @@ import { WorkoutSessionSets } from "@/features/workout-session/ui/workout-sessio
 import { WorkoutSessionHeader } from "@/features/workout-session/ui/workout-session-header";
 import { useDonationModal } from "@/features/workout-session/hooks/use-donation-modal";
 import { WorkoutBuilderFooter } from "@/features/workout-builder/ui/workout-stepper-footer";
-import { env } from "@/env";
 import { Button } from "@/components/ui/button";
 import { HorizontalTopBanner, HorizontalBottomBanner } from "@/components/ads";
 
@@ -142,6 +142,17 @@ export function WorkoutStepper() {
     } else {
       console.log("🚀 [WORKOUT-STEPPER] No exercises to start workout with!");
     }
+  };
+
+  /**
+   * Skip the wizard entirely and log an empty session.
+   *
+   * The three-step funnel exists to *generate* a workout for you. When you
+   * already know what you're doing today it's three screens in the way, so
+   * this starts a session with nothing in it and lets the picker fill it.
+   */
+  const handleStartEmptyWorkout = () => {
+    startWorkout([], selectedEquipment, []);
   };
 
   const [showCongrats, setShowCongrats] = useState(false);
@@ -350,6 +361,16 @@ export function WorkoutStepper() {
       {renderTopBanner()}
 
       <StepperHeader currentStep={currentStep} onStepClick={handleStepClick} steps={steps} />
+
+      {currentStep === 1 && (
+        <div className="flex flex-col items-center gap-1 px-2 pb-2 sm:px-6">
+          <Button className="flex w-full items-center justify-center gap-2 sm:w-auto" onClick={handleStartEmptyWorkout} size="large" variant="outline-general">
+            <Plus className="h-5 w-5" />
+            Start an empty workout
+          </Button>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Already know what you&apos;re doing? Skip the builder and add exercises as you go.</p>
+        </div>
+      )}
 
       <div className="px-2 sm:px-6">{renderStepContent()}</div>
 

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/shared/lib/prisma";
+import { serverAuth } from "@/entities/user/model/get-server-session-user";
 
 const paginationSchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -13,13 +14,11 @@ const paginationSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user session for authentication
-    // const session = await getMobileCompatibleSession(request);
-    // const user = session?.user;
-
-    // if (!user) {
-    //   return NextResponse.json({ error: "UNAUTHORIZED", message: "Authentication required" }, { status: 401 });
-    // }
+    // The whole app is private, so the exercise database is behind a session too.
+    const user = await serverAuth();
+    if (!user) {
+      return NextResponse.json({ error: "UNAUTHORIZED", message: "Authentication required" }, { status: 401 });
+    }
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -98,10 +97,18 @@ export async function GET(request: NextRequest) {
     // Fetch exercises with pagination
     const exercises = await prisma.exercise.findMany({
       where: whereClause,
+      // The full BaseExercise shape: the picker hands a result straight to
+      // addExerciseToSession, which expects a complete exercise.
       select: {
         id: true,
         name: true,
         nameEn: true,
+        description: true,
+        descriptionEn: true,
+        introduction: true,
+        introductionEn: true,
+        createdAt: true,
+        updatedAt: true,
         fullVideoUrl: true,
         fullVideoImageUrl: true,
         attributes: {
@@ -138,9 +145,9 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // Add cache headers - 5 minutes cache
+    // Private: the route is session-gated, so the cache has to be per-user.
     const headers = new Headers();
-    headers.set("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+    headers.set("Cache-Control", "private, max-age=300, stale-while-revalidate=600");
 
     return NextResponse.json(response, { headers });
   } catch (error) {

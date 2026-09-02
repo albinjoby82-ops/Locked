@@ -341,6 +341,89 @@ pnpm lint            0 errors
 
 Both themes were rendered in a browser and eyeballed.
 
+---
+
+# The workout logger
+
+The inherited logger worked but was built for a different product: a
+three-step funnel (equipment → muscles → a *generated* exercise list) that
+had to be walked before you could log anything, and no way to reach an
+exercise by name. Fine for "build me a workout", useless for "add barbell
+rows to what I'm already doing".
+
+## Adding exercises
+
+- **Search, by name.** `ExercisePicker` searches all 876 exercises with
+  muscle and equipment filter chips, debounced, paginated. It stays open
+  after an add so you can queue several, and marks what's already in the
+  session. It's backed by `/api/exercises/all`, which already supported
+  `search`/`muscle`/`equipment` — that route is now **session-gated** (it was
+  open, with the auth check commented out) and returns the full exercise
+  shape so a result can go straight into a session.
+- **Start an empty workout.** A button on step 1 skips the wizard entirely
+  and opens a session with nothing in it. The wizard still exists for when
+  you want it to pick for you.
+- **Add and remove exercises mid-session.** `addExerciseToSession` existed in
+  the store but the only UI that called it wrote to the *builder* store and
+  needed equipment already selected, so it did nothing during a workout.
+  Now the session has its own "Add exercise" button and a per-exercise
+  remove. `removeExerciseFromSession` is new: it renumbers `order` and
+  clamps the cursor, so removing the exercise you're on doesn't leave the
+  session pointing past the end of the list.
+
+## Logging a set
+
+The set editor rendered every set as a *column builder* — a type dropdown, a
+value, a unit select, and add/remove-column buttons, stacked vertically on a
+phone. One set filled the screen.
+
+Reps × weight is what nearly every set actually is, so that case is now one
+row: `SET n · weight · kg · reps · ✓`. Three sets now fit where one used to.
+Nothing was removed — time-based, bodyweight and multi-column sets still get
+the full editor, and it's one tap away on any set behind the ⋯ button.
+
+Two smaller fixes that came out of using it:
+
+- The previous set's numbers show as the placeholder for the next one, so
+  you can see what you're trying to beat.
+- Chromium's number spinners were eating ~20px of a narrow field, clipping
+  three-digit weights to "10". `appearance-none`.
+
+## The rest-timer
+
+It was `fixed` at `bottom-36` with `z-50` — floating in the middle of the
+screen, on top of the set controls it was meant to sit beside, and over the
+exercise picker. It's now docked just above the bottom nav, smaller, at
+`z-40`, and the picker sits at `z-[60]` above it.
+
+## Workouts done
+
+The board now carries a **Workouts done** block: all-time and last-30-day
+session counts for each of us, when each last trained, and a combined feed
+of the last dozen sessions with their exercises. Read straight from
+`WorkoutSession` rather than from `DailyStat` — it's a count of sessions, it
+doesn't need the flattened tonnage, and reading the source means a workout
+finished thirty seconds ago is already in the number.
+
+## Verified
+
+Driven in a browser, end to end: start empty → search "barbell squat" and
+"barbell curl" → add both → log 3 sets (95/100/105 kg × 5) → total volume
+reads **1,500 kg** → finish → the session syncs and the board's count goes
+up, with "Last: today". No console errors.
+
+## ⚠️ `locales/en.ts` is at next-international's type-inference limit
+
+Adding a *single* key to `en.ts` (a `commons.done`) made TypeScript stop
+resolving the key union for the whole app: every `t("...")` call started
+failing with "Expected 2 arguments, but got 1", including keys that had
+typechecked moments earlier. Removing the one key fixed it.
+
+So: **new UI strings in this app are written as literals, not locale keys.**
+That's fine for two English speakers, and it's another argument for
+finishing the i18n removal PLAN.md asked for. If you do need a new key,
+budget for deleting the non-English locale files first.
+
 ## Smaller things deferred
 
 - **Turbopack workspace-root warning** on every `next dev`, left over from when
