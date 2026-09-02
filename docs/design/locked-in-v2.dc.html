@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;background:oklch(0.13 0.012 258);}
+    a{color:oklch(0.78 0.15 200);text-decoration:none;}
+    a:hover{color:oklch(0.85 0.15 200);}
+    *{box-sizing:border-box;}
+    ::-webkit-scrollbar{width:0;height:0;}
+  </style>
+</helmet>
+<div style="min-height:100vh;background:oklch(0.13 0.012 258);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:56px 24px;font-family:Helvetica,Arial,sans-serif;color:oklch(0.96 0.004 258)">
+  <div style="text-align:center;display:flex;flex-direction:column;gap:6px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:4px;color:oklch(0.55 0.012 258)">MOCKUP v2</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:34px;letter-spacing:1px">LOCKED IN</div>
+    <div style="font-size:14px;color:oklch(0.6 0.012 258)">you vs. bro &mdash; two-player gym tracker</div>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="390,844" dark="{{ true }}">
+    <div style="position:relative;width:100%;height:100%;background:oklch(0.16 0.014 258);display:flex;flex-direction:column;overflow:hidden">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:60px 18px 10px;flex-shrink:0;border-bottom:1px solid oklch(0.24 0.016 258)">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:22px;height:22px;border-radius:6px;background:oklch(0.78 0.15 200);display:flex;align-items:center;justify-content:center">
+            <div style="width:10px;height:3px;background:oklch(0.16 0.014 258);border-radius:1px;position:relative">
+              <div style="position:absolute;left:-3px;top:-3px;width:3px;height:9px;background:oklch(0.16 0.014 258);border-radius:1px"></div>
+              <div style="position:absolute;right:-3px;top:-3px;width:3px;height:9px;background:oklch(0.16 0.014 258);border-radius:1px"></div>
+            </div>
+          </div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.5px">LOCKED IN</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="display:flex;align-items:center;gap:6px;background:oklch(0.24 0.02 258);border-radius:999px;padding:5px 11px">
+            <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:8px solid oklch(0.78 0.15 200)"></div>
+            <div style="font-size:11px;font-weight:700;color:oklch(0.85 0.01 258)">14</div>
+          </div>
+          <div style="width:28px;height:28px;border-radius:50%;background:oklch(0.78 0.15 200);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:oklch(0.16 0.014 258)">Y</div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto">
+
+        <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:14px;padding:14px 16px 20px">
+
+            <sc-if value="{{ roastMode }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:10px;background:oklch(0.28 0.07 25 / 0.35);border:1px solid oklch(0.4 0.1 25 / 0.5);border-radius:12px;padding:10px 12px">
+                <img src="gym-tracker/public/images/trophy.png" alt="trophy" style="width:24px;height:24px;object-fit:contain">
+                <div style="font-size:12px;font-weight:800;letter-spacing:0.2px;color:oklch(0.84 0.14 25)">{{ roastBanner }}</div>
+              </div>
+            </sc-if>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:20px;padding:18px 16px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:11px;font-weight:700;letter-spacing:1.4px;color:oklch(0.55 0.012 258)">WEEK 35 &middot; GOAL 5 SESSIONS</div>
+                <div style="font-size:11px;font-weight:700;color:oklch(0.55 0.012 258)">MON&ndash;SUN</div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-around">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                  <div style="position:relative;width:74px;height:74px">
+                    <svg width="74" height="74" viewBox="0 0 74 74">
+                      <circle cx="37" cy="37" r="32" fill="none" stroke="oklch(0.26 0.018 258)" strokeWidth="6"></circle>
+                      <circle cx="37" cy="37" r="32" fill="none" stroke="oklch(0.78 0.15 200)" strokeWidth="6" strokeLinecap="round" strokeDasharray="201" strokeDashoffset="0" transform="rotate(-90 37 37)"></circle>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;line-height:1;color:oklch(0.88 0.1 200)">5</div>
+                      <div style="font-size:9px;font-weight:700;color:oklch(0.5 0.012 258)">OF 5</div>
+                    </div>
+                  </div>
+                  <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:oklch(0.78 0.15 200)">YOU</div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;line-height:1;color:oklch(0.9 0.06 200)">{{ heroYou }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:oklch(0.45 0.01 258)">VS</div>
+                  <div style="width:1px;height:70px;background:oklch(0.28 0.018 258)"></div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                  <div style="position:relative;width:74px;height:74px">
+                    <svg width="74" height="74" viewBox="0 0 74 74">
+                      <circle cx="37" cy="37" r="32" fill="none" stroke="oklch(0.26 0.018 258)" strokeWidth="6"></circle>
+                      <circle cx="37" cy="37" r="32" fill="none" stroke="oklch(0.74 0.16 45)" strokeWidth="6" strokeLinecap="round" strokeDasharray="201" strokeDashoffset="80" transform="rotate(-90 37 37)"></circle>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;line-height:1;color:oklch(0.86 0.1 45)">3</div>
+                      <div style="font-size:9px;font-weight:700;color:oklch(0.5 0.012 258)">OF 5</div>
+                    </div>
+                  </div>
+                  <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:oklch(0.74 0.16 45)">BRO</div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;line-height:1;color:oklch(0.86 0.08 45)">{{ heroBro }}</div>
+                </div>
+              </div>
+              <div style="text-align:center;font-size:10px;letter-spacing:1.4px;color:oklch(0.5 0.012 258);font-weight:700">{{ heroUnit }}</div>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;text-align:center;background:oklch(0.26 0.018 258);border-radius:999px;padding:7px;font-size:11px;font-weight:800;letter-spacing:0.6px;color:oklch(0.92 0.006 258)">WEEK</div>
+              <div style="flex:1;text-align:center;background:oklch(0.19 0.015 258);border-radius:999px;padding:7px;font-size:11px;font-weight:700;letter-spacing:0.6px;color:oklch(0.55 0.012 258)">MONTH</div>
+              <div style="flex:1;text-align:center;background:oklch(0.19 0.015 258);border-radius:999px;padding:7px;font-size:11px;font-weight:700;letter-spacing:0.6px;color:oklch(0.55 0.012 258)">YEAR</div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:16px 14px 12px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="display:flex;align-items:flex-end;gap:2px;height:13px">
+                    <div style="width:3px;height:6px;background:oklch(0.78 0.15 200);border-radius:1px"></div>
+                    <div style="width:3px;height:10px;background:oklch(0.78 0.15 200);border-radius:1px"></div>
+                    <div style="width:3px;height:13px;background:oklch(0.78 0.15 200);border-radius:1px"></div>
+                  </div>
+                  <div style="font-size:12px;font-weight:800;letter-spacing:0.6px">VOLUME TREND</div>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:oklch(0.5 0.012 258)">8 WEEKS &middot; LB</div>
+              </div>
+              <svg viewBox="0 0 320 130" style="width:100%;height:130px;overflow:visible">
+                <line x1="0" y1="10" x2="320" y2="10" stroke="oklch(0.24 0.016 258)" strokeWidth="1"></line>
+                <line x1="0" y1="45" x2="320" y2="45" stroke="oklch(0.24 0.016 258)" strokeWidth="1"></line>
+                <line x1="0" y1="80" x2="320" y2="80" stroke="oklch(0.24 0.016 258)" strokeWidth="1"></line>
+                <line x1="0" y1="115" x2="320" y2="115" stroke="oklch(0.28 0.018 258)" strokeWidth="1"></line>
+                <path d="M0,88 L46,72 L92,78 L137,58 L183,50 L229,40 L274,30 L320,18 L320,115 L0,115 Z" fill="oklch(0.78 0.15 200)" fillOpacity="0.14"></path>
+                <polyline points="0,88 46,72 92,78 137,58 183,50 229,40 274,30 320,18" fill="none" stroke="oklch(0.78 0.15 200)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
+                <path d="M0,96 L46,90 L92,99 L137,84 L183,88 L229,74 L274,80 L320,62 L320,115 L0,115 Z" fill="oklch(0.74 0.16 45)" fillOpacity="0.12"></path>
+                <polyline points="0,96 46,90 92,99 137,84 183,88 229,74 274,80 320,62" fill="none" stroke="oklch(0.74 0.16 45)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4"></polyline>
+                <circle cx="320" cy="18" r="4" fill="oklch(0.78 0.15 200)"></circle>
+                <circle cx="320" cy="62" r="4" fill="oklch(0.74 0.16 45)"></circle>
+              </svg>
+              <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:oklch(0.45 0.01 258)">
+                <div>W28</div><div>W29</div><div>W30</div><div>W31</div><div>W32</div><div>W33</div><div>W34</div><div>W35</div>
+              </div>
+              <div style="display:flex;gap:14px;padding-top:2px">
+                <div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:3px;border-radius:2px;background:oklch(0.78 0.15 200)"></div><div style="font-size:10px;font-weight:700;color:oklch(0.65 0.01 258)">YOU 48.2K</div></div>
+                <div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:3px;border-radius:2px;background:oklch(0.74 0.16 45)"></div><div style="font-size:10px;font-weight:700;color:oklch(0.65 0.01 258)">BRO 39.1K</div></div>
+              </div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:16px 14px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:12px;font-weight:800;letter-spacing:0.6px">SESSIONS PER WEEK</div>
+                <div style="font-size:10px;font-weight:700;color:oklch(0.5 0.012 258)">GOAL 5</div>
+              </div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;height:96px;padding-bottom:2px;border-bottom:1px solid oklch(0.28 0.018 258)">
+                <sc-for list="{{ weekBars }}" as="w" hint-placeholder-count="6">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                    <div style="display:flex;align-items:flex-end;gap:3px;height:76px">
+                      <div style="width:9px;border-radius:3px 3px 0 0;background:oklch(0.78 0.15 200);height:{{ w.youH }}px"></div>
+                      <div style="width:9px;border-radius:3px 3px 0 0;background:oklch(0.74 0.16 45);height:{{ w.broH }}px"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:oklch(0.45 0.01 258);padding:0 8px">
+                <div>W30</div><div>W31</div><div>W32</div><div>W33</div><div>W34</div><div>W35</div>
+              </div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:16px 14px;display:flex;flex-direction:column;gap:12px">
+              <div style="font-size:12px;font-weight:800;letter-spacing:0.6px">MUSCLE SPLIT &middot; SETS THIS WEEK</div>
+              <sc-for list="{{ muscleSplit }}" as="m" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:34px;height:34px;border-radius:9px;background:oklch(0.26 0.018 258);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <div style="{{ m.iconStyle }}"></div>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+                    <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:oklch(0.65 0.01 258)">
+                      <div>{{ m.label }}</div>
+                      <div>{{ m.you }} &middot; {{ m.bro }}</div>
+                    </div>
+                    <div style="display:flex;gap:3px">
+                      <div style="flex:1;height:6px;border-radius:3px;background:oklch(0.14 0.012 258);overflow:hidden"><div style="height:100%;border-radius:3px;background:oklch(0.78 0.15 200);width:{{ m.youPct }}%"></div></div>
+                      <div style="flex:1;height:6px;border-radius:3px;background:oklch(0.14 0.012 258);overflow:hidden"><div style="height:100%;border-radius:3px;background:oklch(0.74 0.16 45);width:{{ m.broPct }}%"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ stats }}" as="stat" hint-placeholder-count="3">
+                <div style="background:oklch(0.21 0.016 258);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:0.5px;color:oklch(0.65 0.01 258)">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:8px;height:8px;background:{{ stat.leadColor }};border-radius:2px;transform:rotate(45deg)"></div>
+                      <div>{{ stat.label }}</div>
+                    </div>
+                    <div style="font-size:10px;color:{{ stat.leadColor }}">{{ stat.leadText }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:16px;font-size:11px;font-weight:800;color:oklch(0.78 0.15 200)">Y</div>
+                      <div style="flex:1;height:8px;border-radius:4px;background:oklch(0.14 0.012 258);overflow:hidden"><div style="height:100%;border-radius:4px;background:oklch(0.78 0.15 200);width:{{ stat.youPct }}%"></div></div>
+                      <div style="width:58px;text-align:right;font-size:12px;font-weight:700">{{ stat.youLabel }}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:16px;font-size:11px;font-weight:800;color:oklch(0.74 0.16 45)">B</div>
+                      <div style="flex:1;height:8px;border-radius:4px;background:oklch(0.14 0.012 258);overflow:hidden"><div style="height:100%;border-radius:4px;background:oklch(0.74 0.16 45);width:{{ stat.broPct }}%"></div></div>
+                      <div style="width:58px;text-align:right;font-size:12px;font-weight:700">{{ stat.broLabel }}</div>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLog }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;padding:14px 16px 20px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;line-height:1.1">PUSH DAY A</div>
+                <div style="font-size:11px;color:oklch(0.55 0.012 258);margin-top:3px">4 exercises &middot; 9 sets planned</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="background:oklch(0.24 0.02 258);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:800;color:oklch(0.9 0.006 258)">32:14</div>
+                <div style="background:oklch(0.78 0.15 200);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;color:oklch(0.16 0.014 258)">FINISH</div>
+              </div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:16px;height:16px;border-radius:50%;border:2px solid oklch(0.78 0.15 200);position:relative">
+                    <div style="position:absolute;top:2px;left:6px;width:2px;height:6px;background:oklch(0.78 0.15 200);border-radius:1px"></div>
+                  </div>
+                  <div style="font-size:11px;font-weight:800;letter-spacing:0.6px;color:oklch(0.85 0.01 258)">REST TIMER</div>
+                </div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:oklch(0.88 0.1 200)">0:47</div>
+              </div>
+              <div style="height:6px;border-radius:3px;background:oklch(0.14 0.012 258);overflow:hidden"><div style="height:100%;width:52%;border-radius:3px;background:oklch(0.78 0.15 200)"></div></div>
+            </div>
+
+            <sc-for list="{{ exercises }}" as="ex" hint-placeholder-count="4">
+              <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:11px">
+                <div style="display:flex;align-items:center;gap:11px">
+                  <div style="width:48px;height:48px;border-radius:12px;background:oklch(0.26 0.018 258);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <div style="{{ ex.iconStyle }}"></div>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:14px">{{ ex.name }}</div>
+                    <div style="display:flex;gap:5px;margin-top:5px">
+                      <div style="background:oklch(0.26 0.018 258);border-radius:5px;padding:2px 7px;font-size:9px;font-weight:800;letter-spacing:0.5px;color:oklch(0.7 0.01 258)">{{ ex.muscle }}</div>
+                      <div style="background:oklch(0.26 0.018 258);border-radius:5px;padding:2px 7px;font-size:9px;font-weight:800;letter-spacing:0.5px;color:oklch(0.7 0.01 258)">{{ ex.equipment }}</div>
+                    </div>
+                  </div>
+                  <svg width="52" height="26" viewBox="0 0 52 26" style="flex-shrink:0">
+                    <polyline points="{{ ex.spark }}" fill="none" stroke="oklch(0.78 0.15 200)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></polyline>
+                  </svg>
+                </div>
+
+                <div style="display:flex;font-size:9px;font-weight:800;letter-spacing:0.5px;color:oklch(0.48 0.012 258);padding:0 4px">
+                  <div style="width:30px">SET</div>
+                  <div style="width:66px">PREV</div>
+                  <div style="flex:1">LB</div>
+                  <div style="flex:1">REPS</div>
+                  <div style="width:28px;text-align:right">DONE</div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <sc-for list="{{ ex.sets }}" as="set" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;padding:7px 4px;border-radius:9px;background:{{ set.rowBg }}">
+                      <div style="width:30px"><div style="width:19px;height:19px;border-radius:6px;background:{{ set.badgeBg }};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:{{ set.badgeColor }}">{{ set.badge }}</div></div>
+                      <div style="width:66px;font-size:11px;color:oklch(0.5 0.012 258)">{{ set.prev }}</div>
+                      <div style="flex:1;font-size:14px;font-weight:700">{{ set.weight }}</div>
+                      <div style="flex:1;font-size:14px;font-weight:700">{{ set.reps }}</div>
+                      <div style="width:28px;display:flex;justify-content:flex-end">
+                        <div onClick="{{ set.onToggle }}" style="{{ set.circleStyle }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:7px;border-radius:9px;background:oklch(0.24 0.018 258);font-size:11px;font-weight:800;letter-spacing:0.5px;color:oklch(0.65 0.01 258)">
+                  <div style="width:11px;height:11px;position:relative">
+                    <div style="position:absolute;top:4px;left:0;width:11px;height:3px;background:oklch(0.65 0.01 258);border-radius:1px"></div>
+                    <div style="position:absolute;top:0;left:4px;width:3px;height:11px;background:oklch(0.65 0.01 258);border-radius:1px"></div>
+                  </div>
+                  ADD SET
+                </div>
+              </div>
+            </sc-for>
+
+            <div style="border:2px dashed oklch(0.3 0.02 258);border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:center;gap:9px">
+              <div style="width:14px;height:14px;position:relative">
+                <div style="position:absolute;top:5px;left:0;width:14px;height:4px;background:oklch(0.55 0.012 258);border-radius:2px"></div>
+                <div style="position:absolute;top:0;left:5px;width:4px;height:14px;background:oklch(0.55 0.012 258);border-radius:2px"></div>
+              </div>
+              <div style="font-size:13px;font-weight:800;letter-spacing:0.5px;color:oklch(0.55 0.012 258)">ADD EXERCISE</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;padding:14px 16px 20px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px">AUGUST 2026</div>
+              <div style="display:flex;gap:8px">
+                <div style="width:26px;height:26px;border-radius:8px;background:oklch(0.24 0.02 258);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:oklch(0.7 0.01 258)">&lsaquo;</div>
+                <div style="width:26px;height:26px;border-radius:8px;background:oklch(0.24 0.02 258);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:oklch(0.7 0.01 258)">&rsaquo;</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;background:oklch(0.21 0.016 258);border-radius:12px;padding:11px 12px">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:oklch(0.88 0.1 200)">21</div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.6px;color:oklch(0.5 0.012 258);margin-top:2px">SESSIONS</div>
+              </div>
+              <div style="flex:1;background:oklch(0.21 0.016 258);border-radius:12px;padding:11px 12px">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:oklch(0.88 0.1 200)">196K</div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.6px;color:oklch(0.5 0.012 258);margin-top:2px">LB MOVED</div>
+              </div>
+              <div style="flex:1;background:oklch(0.21 0.016 258);border-radius:12px;padding:11px 12px">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:oklch(0.88 0.1 200)">18H</div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.6px;color:oklch(0.5 0.012 258);margin-top:2px">UNDER BAR</div>
+              </div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:14px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:7px">
+                <sc-for list="{{ weekLabels }}" as="wl" hint-placeholder-count="7">
+                  <div style="text-align:center;font-size:9px;font-weight:800;color:oklch(0.45 0.01 258)">{{ wl }}</div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                <sc-for list="{{ days }}" as="d" hint-placeholder-count="35">
+                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:36px;border-radius:8px;background:{{ d.cellBg }}">
+                    <div style="font-size:10px;font-weight:700;color:oklch(0.75 0.01 258)">{{ d.day }}</div>
+                    <div style="display:flex;gap:2px;height:5px">
+                      <sc-if value="{{ d.you }}" hint-placeholder-val="{{ false }}"><div style="width:5px;height:5px;border-radius:50%;background:oklch(0.78 0.15 200)"></div></sc-if>
+                      <sc-if value="{{ d.bro }}" hint-placeholder-val="{{ false }}"><div style="width:5px;height:5px;border-radius:50%;background:oklch(0.74 0.16 45)"></div></sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:16px;margin-top:12px">
+                <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.78 0.15 200)"></div><div style="font-size:10px;font-weight:700;color:oklch(0.6 0.01 258)">YOU &middot; 21 DAYS</div></div>
+                <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.74 0.16 45)"></div><div style="font-size:10px;font-weight:700;color:oklch(0.6 0.01 258)">BRO &middot; 10 DAYS</div></div>
+              </div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:16px 14px;display:flex;flex-direction:column;gap:12px">
+              <div style="font-size:12px;font-weight:800;letter-spacing:0.6px">BODYWEIGHT TREND</div>
+              <svg viewBox="0 0 320 96" style="width:100%;height:96px">
+                <line x1="0" y1="20" x2="320" y2="20" stroke="oklch(0.24 0.016 258)" strokeWidth="1"></line>
+                <line x1="0" y1="55" x2="320" y2="55" stroke="oklch(0.24 0.016 258)" strokeWidth="1"></line>
+                <line x1="0" y1="90" x2="320" y2="90" stroke="oklch(0.28 0.018 258)" strokeWidth="1"></line>
+                <polyline points="0,66 53,62 106,58 160,54 213,48 266,44 320,38" fill="none" stroke="oklch(0.78 0.15 200)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
+                <polyline points="0,40 53,42 106,38 160,44 213,40 266,46 320,44" fill="none" stroke="oklch(0.74 0.16 45)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4"></polyline>
+              </svg>
+              <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:oklch(0.45 0.01 258)">
+                <div>WK1</div><div>WK2</div><div>WK3</div><div>WK4</div><div>WK5</div><div>WK6</div><div>NOW</div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:11px;font-weight:800;letter-spacing:1.2px;color:oklch(0.5 0.012 258)">RECENT SESSIONS</div>
+              <sc-for list="{{ history }}" as="h" hint-placeholder-count="4">
+                <div style="display:flex;gap:11px;background:oklch(0.21 0.016 258);border-radius:14px;padding:12px;align-items:center">
+                  <div style="width:42px;height:42px;border-radius:11px;background:oklch(0.26 0.018 258);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <div style="{{ h.iconStyle }}"></div>
+                  </div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <div style="font-size:13px;font-weight:700">{{ h.title }}</div>
+                      <div style="font-size:10px;font-weight:800;color:{{ h.color }}">{{ h.who }}</div>
+                    </div>
+                    <div style="font-size:10px;color:oklch(0.5 0.012 258)">{{ h.date }} &middot; {{ h.duration }} &middot; {{ h.volume }}</div>
+                    <sc-if value="{{ roastMode }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-size:10px;color:oklch(0.72 0.11 25);margin-top:1px">{{ h.tag }}</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLeaderboard }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;padding:14px 16px 20px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <img src="gym-tracker/public/images/trophy.png" alt="trophy" style="width:42px;height:42px;object-fit:contain">
+              <div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;line-height:1.1">WEEKLY LEADERBOARD</div>
+                <div style="font-size:11px;color:oklch(0.55 0.012 258);margin-top:2px">Season 1 &middot; Week 35 of 52</div>
+              </div>
+            </div>
+
+            <sc-for list="{{ leaderboard }}" as="lb" hint-placeholder-count="2">
+              <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:15px 14px;display:flex;flex-direction:column;gap:12px;border:1px solid {{ lb.borderColor }}">
+                <div style="display:flex;align-items:center;gap:11px">
+                  <div style="width:34px;height:34px;border-radius:50%;background:{{ lb.color }};display:flex;align-items:center;justify-content:center;font-weight:800;color:oklch(0.16 0.014 258);font-size:14px;font-family:'Barlow Condensed',sans-serif">#{{ lb.rank }}</div>
+                  <div style="flex:1">
+                    <div style="font-weight:700;font-size:15px">{{ lb.name }}</div>
+                    <div style="font-size:10px;color:oklch(0.5 0.012 258);margin-top:2px">{{ lb.record }}</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px;line-height:1;color:{{ lb.color }}">{{ lb.points }}</div>
+                    <div style="font-size:9px;font-weight:800;color:oklch(0.5 0.012 258);letter-spacing:0.6px">POINTS</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ lb.breakdown }}" as="b" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:78px;font-size:9px;font-weight:800;letter-spacing:0.4px;color:oklch(0.55 0.012 258)">{{ b.label }}</div>
+                      <div style="flex:1;height:6px;border-radius:3px;background:oklch(0.14 0.012 258);overflow:hidden"><div style="height:100%;border-radius:3px;background:{{ lb.color }};width:{{ b.pct }}%"></div></div>
+                      <div style="width:24px;text-align:right;font-size:11px;font-weight:700">{{ b.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:16px 14px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:12px;font-weight:800;letter-spacing:0.6px">SEASON POINTS RACE</div>
+                <div style="font-size:10px;font-weight:700;color:oklch(0.5 0.012 258)">CUMULATIVE</div>
+              </div>
+              <svg viewBox="0 0 320 110" style="width:100%;height:110px">
+                <line x1="0" y1="15" x2="320" y2="15" stroke="oklch(0.24 0.016 258)" strokeWidth="1"></line>
+                <line x1="0" y1="55" x2="320" y2="55" stroke="oklch(0.24 0.016 258)" strokeWidth="1"></line>
+                <line x1="0" y1="98" x2="320" y2="98" stroke="oklch(0.28 0.018 258)" strokeWidth="1"></line>
+                <path d="M0,98 L46,86 L92,72 L137,62 L183,48 L229,38 L274,26 L320,12 L320,98 Z" fill="oklch(0.78 0.15 200)" fillOpacity="0.13"></path>
+                <polyline points="0,98 46,86 92,72 137,62 183,48 229,38 274,26 320,12" fill="none" stroke="oklch(0.78 0.15 200)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
+                <polyline points="0,98 46,90 92,80 137,74 183,64 229,58 274,48 320,40" fill="none" stroke="oklch(0.74 0.16 45)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 4"></polyline>
+                <circle cx="320" cy="12" r="4" fill="oklch(0.78 0.15 200)"></circle>
+                <circle cx="320" cy="40" r="4" fill="oklch(0.74 0.16 45)"></circle>
+              </svg>
+              <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:oklch(0.45 0.01 258)">
+                <div>W28</div><div>W29</div><div>W30</div><div>W31</div><div>W32</div><div>W33</div><div>W34</div><div>W35</div>
+              </div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:16px 14px;display:flex;flex-direction:column;gap:11px">
+              <div style="font-size:12px;font-weight:800;letter-spacing:0.6px">WEEKLY WIN RECORD</div>
+              <div style="display:flex;gap:5px">
+                <sc-for list="{{ winRecord }}" as="w" hint-placeholder-count="8">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px">
+                    <div style="width:100%;height:30px;border-radius:7px;background:{{ w.bg }};display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:{{ w.fg }}">{{ w.letter }}</div>
+                    <div style="font-size:8px;font-weight:700;color:oklch(0.45 0.01 258)">{{ w.week }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;font-weight:700;color:oklch(0.6 0.01 258)">You lead the season 6&ndash;2</div>
+            </div>
+
+            <div style="background:oklch(0.21 0.016 258);border-radius:16px;padding:16px 14px;display:flex;flex-direction:column;gap:11px">
+              <div style="font-size:12px;font-weight:800;letter-spacing:0.6px">BADGES EARNED</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ badges }}" as="bg" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:7px;background:oklch(0.26 0.018 258);border-radius:999px;padding:6px 12px 6px 7px">
+                    <div style="width:20px;height:20px;border-radius:50%;background:{{ bg.color }};display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;color:oklch(0.16 0.014 258)">{{ bg.initial }}</div>
+                    <div style="font-size:10px;font-weight:800;letter-spacing:0.3px;color:oklch(0.8 0.01 258)">{{ bg.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ roastMode }}" hint-placeholder-val="{{ true }}">
+              <div style="background:oklch(0.28 0.07 25 / 0.3);border:1px solid oklch(0.4 0.1 25 / 0.5);border-radius:14px;padding:13px 14px;font-size:12px;color:oklch(0.84 0.14 25);font-style:italic">{{ roastQuote }}</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-around;padding:10px 8px 22px;background:oklch(0.19 0.015 258);border-top:1px solid oklch(0.28 0.018 258)">
+        <div onClick="{{ goDashboard }}" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+          <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;width:16px;height:16px">
+            <div style="background:{{ dashColor }};border-radius:1px"></div><div style="background:{{ dashColor }};border-radius:1px"></div>
+            <div style="background:{{ dashColor }};border-radius:1px"></div><div style="background:{{ dashColor }};border-radius:1px"></div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:{{ dashColor }}">DASHBOARD</div>
+        </div>
+        <div onClick="{{ goLog }}" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+          <div style="width:18px;height:18px;border-radius:50%;border:2px solid {{ logColor }};position:relative">
+            <div style="position:absolute;top:6px;left:2px;width:8px;height:2px;background:{{ logColor }}"></div>
+            <div style="position:absolute;top:2px;left:6px;width:2px;height:8px;background:{{ logColor }}"></div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:{{ logColor }}">LOG</div>
+        </div>
+        <div onClick="{{ goHistory }}" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+          <div style="width:16px;height:16px;border-radius:3px;border:2px solid {{ histColor }};position:relative">
+            <div style="position:absolute;top:-1px;left:1px;right:1px;height:3px;background:{{ histColor }}"></div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:{{ histColor }}">HISTORY</div>
+        </div>
+        <div onClick="{{ goLeaderboard }}" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:16px">
+            <div style="width:4px;height:8px;background:{{ boardColor }};border-radius:1px"></div>
+            <div style="width:4px;height:14px;background:{{ boardColor }};border-radius:1px"></div>
+            <div style="width:4px;height:16px;background:{{ boardColor }};border-radius:1px"></div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:{{ boardColor }}">BOARD</div>
+        </div>
+      </div>
+
+    </div>
+  </x-import>
+
+  <div style="font-size:12px;color:oklch(0.45 0.01 258);max-width:390px;text-align:center">Tap the bottom tabs to switch screens &middot; tap set circles to complete them. Equipment art from the vendored workout-cool base (MIT).</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;primaryMetric&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;streak&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;streak&quot;, &quot;volume&quot;], &quot;section&quot;: &quot;Dashboard&quot;},
+  &quot;roastMode&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Tone&quot;},
+  &quot;leaderIsYou&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Demo data&quot;}
+}">
+class Component extends DCLogic {
+  state = {
+    screen: 'dashboard',
+    exercises: [
+      { name: 'Barbell Bench Press', muscle: 'CHEST', equipment: 'BARBELL', icon: 'gym-tracker/public/images/equipment/barbell.png',
+        spark: '0,20 13,16 26,17 39,10 52,4',
+        sets: [
+          { badge: 'W', prev: '135 × 8', weight: 135, reps: 8, completed: true, warmup: true },
+          { badge: '1', prev: '185 × 5', weight: 185, reps: 5, completed: true },
+          { badge: '2', prev: '185 × 5', weight: 185, reps: 5, completed: true },
+          { badge: '3', prev: '185 × 4', weight: 190, reps: 4, completed: false }
+        ]},
+      { name: 'Incline Dumbbell Press', muscle: 'UPPER CHEST', equipment: 'DUMBBELL', icon: 'gym-tracker/public/images/equipment/dumbbell.png',
+        spark: '0,22 13,18 26,14 39,12 52,7',
+        sets: [
+          { badge: '1', prev: '70 × 8', weight: 70, reps: 8, completed: true },
+          { badge: '2', prev: '70 × 8', weight: 70, reps: 7, completed: false }
+        ]},
+      { name: 'Weighted Dip', muscle: 'TRICEPS', equipment: 'BODYWEIGHT', icon: 'gym-tracker/public/images/equipment/bodyweight.png',
+        spark: '0,19 13,20 26,13 39,11 52,9',
+        sets: [
+          { badge: '1', prev: 'BW+35 × 8', weight: 45, reps: 8, completed: false },
+          { badge: '2', prev: 'BW+35 × 7', weight: 45, reps: 7, completed: false }
+        ]},
+      { name: 'Cable Fly', muscle: 'CHEST', equipment: 'BAND', icon: 'gym-tracker/public/images/equipment/band.png',
+        spark: '0,21 13,17 26,18 39,14 52,12',
+        sets: [
+          { badge: '1', prev: '40 × 12', weight: 40, reps: 12, completed: false }
+        ]}
+    ]
+  };
+
+  toggleSet(ei, si) {
+    this.setState(st => ({
+      exercises: st.exercises.map((e, i) => i !== ei ? e : {
+        ...e,
+        sets: e.sets.map((set, j) => j !== si ? set : { ...set, completed: !set.completed })
+      })
+    }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const primaryMetric = this.props.primaryMetric ?? 'streak';
+    const roastMode = this.props.roastMode ?? true;
+    const leaderIsYou = this.props.leaderIsYou ?? true;
+
+    const you = 'oklch(0.78 0.15 200)';
+    const bro = 'oklch(0.74 0.16 45)';
+    const textLow = 'oklch(0.55 0.012 258)';
+    const eq = 'gym-tracker/public/images/equipment/';
+    const iconStyle = (icon, size) => `width:${size}px;height:${size}px;background-image:url(${icon});background-size:contain;background-repeat:no-repeat;background-position:center;filter:brightness(1.3)`;
+
+    const stats = [
+      { label: 'STREAK', you: 14, bro: 6, max: 14, youLabel: '14 d', broLabel: '6 d', leadText: 'YOU +8', leadColor: you },
+      { label: 'WORKOUTS THIS WEEK', you: 5, bro: 3, max: 5, youLabel: '5 / 5', broLabel: '3 / 5', leadText: 'YOU +2', leadColor: you },
+      { label: 'VOLUME LIFTED', you: 48200, bro: 39100, max: 48200, youLabel: '48.2K', broLabel: '39.1K', leadText: 'YOU +23%', leadColor: you },
+      { label: 'AVG SESSION', you: 58, bro: 41, max: 58, youLabel: '58 min', broLabel: '41 min', leadText: 'YOU +17m', leadColor: you },
+      { label: 'PRs THIS MONTH', you: 4, bro: 5, max: 5, youLabel: '4', broLabel: '5', leadText: 'BRO +1', leadColor: bro }
+    ].map(r => ({ ...r, youPct: Math.round(r.you / r.max * 100), broPct: Math.round(r.bro / r.max * 100) }));
+
+    const weekBars = [
+      { y: 4, b: 3 }, { y: 3, b: 4 }, { y: 5, b: 2 }, { y: 4, b: 3 }, { y: 5, b: 3 }, { y: 5, b: 3 }
+    ].map(w => ({ youH: w.y * 15, broH: w.b * 15 }));
+
+    const muscleSplit = [
+      { label: 'CHEST', you: 16, bro: 12, icon: eq + 'barbell.png' },
+      { label: 'BACK', you: 14, bro: 9, icon: eq + 'pull-up-bar.png' },
+      { label: 'LEGS', you: 18, bro: 6, icon: eq + 'plate.png' },
+      { label: 'SHOULDERS', you: 10, bro: 11, icon: eq + 'kettlebell.png' },
+      { label: 'ARMS', you: 12, bro: 14, icon: eq + 'dumbbell.png' }
+    ].map(m => ({ ...m, iconStyle: iconStyle(m.icon, 20), youPct: Math.round(m.you / 18 * 100), broPct: Math.round(m.bro / 18 * 100) }));
+
+    const days = [];
+    for (let i = 0; i < 2; i++) days.push({ day: '', you: false, bro: false, cellBg: 'transparent' });
+    for (let d = 1; d <= 31; d++) {
+      const y = d % 2 === 0 || d % 5 === 0;
+      const b = d % 3 === 0;
+      let bg = 'transparent';
+      if (y && b) bg = 'oklch(0.29 0.02 258)';
+      else if (y || b) bg = 'oklch(0.24 0.017 258)';
+      days.push({ day: d, you: y, bro: b, cellBg: bg });
+    }
+    while (days.length < 35) days.push({ day: '', you: false, bro: false, cellBg: 'transparent' });
+
+    const history = [
+      { title: 'Push Day A', who: 'YOU', date: 'AUG 29', duration: '54 MIN', volume: '12,400 LB', tag: 'New PR on bench — 190 × 4', color: you, icon: eq + 'barbell.png' },
+      { title: 'Arms + Abs', who: 'BRO', date: 'AUG 28', duration: '41 MIN', volume: '8,900 LB', tag: 'Skipped legs. Again.', color: bro, icon: eq + 'dumbbell.png' },
+      { title: 'Leg Day', who: 'YOU', date: 'AUG 27', duration: '62 MIN', volume: '14,100 LB', tag: '6th day in a row', color: you, icon: eq + 'plate.png' },
+      { title: 'Pull Day B', who: 'BRO', date: 'AUG 25', duration: '38 MIN', volume: '9,600 LB', tag: '"Rest day" #2 this week', color: bro, icon: eq + 'pull-up-bar.png' },
+      { title: 'Full Body', who: 'YOU', date: 'AUG 24', duration: '49 MIN', volume: '11,200 LB', tag: 'Kettlebell finisher survived', color: you, icon: eq + 'kettlebell.png' }
+    ].map(h => ({ ...h, iconStyle: iconStyle(h.icon, 26) }));
+
+    const youBreakdown = [
+      { label: 'STREAK', value: 60, pct: 100 },
+      { label: 'VOLUME', value: 90, pct: 100 },
+      { label: 'CONSISTENCY', value: 55, pct: 92 },
+      { label: 'PRs HIT', value: 40, pct: 100 }
+    ];
+    const broBreakdown = [
+      { label: 'STREAK', value: 35, pct: 58 },
+      { label: 'VOLUME', value: 80, pct: 89 },
+      { label: 'CONSISTENCY', value: 48, pct: 80 },
+      { label: 'PRs HIT', value: 35, pct: 88 }
+    ];
+
+    const winner = { rank: 1, points: 245, record: '6 wins · 2 losses this season', breakdown: youBreakdown };
+    const loser = { rank: 2, points: 198, record: '2 wins · 6 losses this season', breakdown: broBreakdown };
+    const leaderboard = leaderIsYou ? [
+      { ...winner, name: 'YOU', color: you, borderColor: 'oklch(0.45 0.09 200 / 0.6)' },
+      { ...loser, name: 'BRO', color: bro, borderColor: 'transparent' }
+    ] : [
+      { ...winner, name: 'BRO', color: bro, borderColor: 'oklch(0.45 0.09 45 / 0.6)' },
+      { ...loser, name: 'YOU', color: you, borderColor: 'transparent' }
+    ];
+
+    const winPattern = leaderIsYou
+      ? ['Y', 'B', 'Y', 'Y', 'B', 'Y', 'Y', 'Y']
+      : ['Y', 'B', 'B', 'Y', 'B', 'B', 'Y', 'B'];
+    const winRecord = winPattern.map((w, i) => ({
+      letter: w,
+      week: 'W' + (28 + i),
+      bg: w === 'Y' ? 'oklch(0.34 0.07 200)' : 'oklch(0.33 0.07 45)',
+      fg: w === 'Y' ? 'oklch(0.88 0.11 200)' : 'oklch(0.87 0.11 45)'
+    }));
+
+    const badges = [
+      { initial: 'S', label: '14-DAY STREAK', color: you },
+      { initial: 'V', label: '50K CLUB', color: you },
+      { initial: 'P', label: '5 PRs IN A MONTH', color: bro },
+      { initial: 'L', label: 'NEVER SKIPS LEGS', color: you },
+      { initial: 'E', label: 'EARLY BIRD ×10', color: bro }
+    ];
+
+    const heroYou = primaryMetric === 'streak' ? 14 : '48.2K';
+    const heroBro = primaryMetric === 'streak' ? 6 : '39.1K';
+    const heroUnit = primaryMetric === 'streak' ? 'DAY STREAK' : 'LB LIFTED THIS WEEK';
+
+    return {
+      isDashboard: s.screen === 'dashboard',
+      isLog: s.screen === 'log',
+      isHistory: s.screen === 'history',
+      isLeaderboard: s.screen === 'leaderboard',
+      goDashboard: () => this.setState({ screen: 'dashboard' }),
+      goLog: () => this.setState({ screen: 'log' }),
+      goHistory: () => this.setState({ screen: 'history' }),
+      goLeaderboard: () => this.setState({ screen: 'leaderboard' }),
+      dashColor: s.screen === 'dashboard' ? you : textLow,
+      logColor: s.screen === 'log' ? you : textLow,
+      histColor: s.screen === 'history' ? you : textLow,
+      boardColor: s.screen === 'leaderboard' ? you : textLow,
+      roastMode,
+      roastBanner: leaderIsYou ? 'BRO IS GETTING COOKED THIS WEEK' : "YOU'RE SLIPPING — BRO'S PULLING AHEAD",
+      roastQuote: leaderIsYou ? '"Better luck next week, bro." — You, definitely not gloating' : '"It\'s not about the points." — You, down 47 points',
+      heroYou, heroBro, heroUnit,
+      stats, weekBars, muscleSplit, days, history, leaderboard, winRecord, badges,
+      weekLabels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+      exercises: s.exercises.map((ex, ei) => ({
+        ...ex,
+        iconStyle: iconStyle(ex.icon, 32),
+        sets: ex.sets.map((set, si) => ({
+          ...set,
+          rowBg: set.completed ? 'oklch(0.28 0.035 200 / 0.35)' : 'oklch(0.24 0.018 258 / 0.6)',
+          badgeBg: set.warmup ? 'oklch(0.33 0.06 85)' : 'oklch(0.28 0.018 258)',
+          badgeColor: set.warmup ? 'oklch(0.88 0.12 85)' : 'oklch(0.7 0.01 258)',
+          circleStyle: `width:20px;height:20px;border-radius:7px;cursor:pointer;border:2px solid ${set.completed ? you : 'oklch(0.4 0.02 258)'};background:${set.completed ? you : 'transparent'}`,
+          onToggle: () => this.toggleSet(ei, si)
+        }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

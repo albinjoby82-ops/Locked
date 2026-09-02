@@ -1,0 +1,19 @@
+{
+  // Cloudflare Workers deployment (not Pages) via the OpenNext adapter.
+  // See NOTES.md for why Workers + external Postgres rather than Pages + D1.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gym-tracker",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // Secrets are NOT set here. Push them with `wrangler secret put <NAME>`:
+  //   DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL, ALLOWED_EMAILS
+  // NEXT_PUBLIC_APP_URL is inlined at build time, so set it in the build env.
+}
