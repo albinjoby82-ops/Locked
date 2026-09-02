@@ -2,59 +2,54 @@
 
 ## Project Overview
 
-Workout.cool is a fitness app with two main components:
+**Locked In** — a private gym / workout tracker for exactly two people (me and
+my brother). It logs workouts and shows, side by side, which of us is actually
+training.
 
-- **Website** Next.js (App Router) web client with Server Actions Location: `/Users/mathiasbradiceanu/dev/perso/workout-cool-web`
+Built on a vendored snapshot of the MIT-licensed `workout-cool` project. See:
 
-- **Mobile App** React Native app for iOS and Android Consumes the Workout.cool Next.js API Location:
-  `/Users/mathiasbradiceanu/dev/perso/workout-cool-mobile`
+- `PLAN.md` — the product plan and the order of work.
+- `NOTES.md` — the state of the Step 1 build (strip, auth, deploy prep).
+- `PROVENANCE.md` — where the base app came from and how to run it.
+- `AGENTS.md` — code style, import order and FSD conventions. Follow it.
+
+There is no mobile app. This is a single Next.js web app; upstream docs
+(`README.md`, `CONTRIBUTING.md`) still describe the original commercial project
+and are background, not instructions.
 
 ## Architecture
 
-### System Components
+- **Next.js 16** (App Router) + TypeScript + TailwindCSS, Feature-Sliced Design.
+- `app/layout.tsx` is the context-free root layout (`<html>`/`<body>`, fonts,
+  global CSS). `app/[locale]/layout.tsx` mounts the client providers. Keep the
+  root layout free of providers — the synthetic `/_global-error` and
+  `/_not-found` pages render outside `[locale]` and will fail the build
+  otherwise.
+- Server Components by default; `"use client"` only where needed.
+- Server Actions via `next-safe-action`, client state via `@tanstack/react-query`.
+- **Prisma + PostgreSQL** — schema at `prisma/schema.prisma`. Postgres, not
+  SQLite/D1: the schema relies on scalar list columns.
+- **Auth**: better-auth, email + password only, gated by an `ALLOWED_EMAILS`
+  allowlist enforced on user creation.
 
-1. **Web Client (Next.js)**
+## What was deliberately removed or stubbed
 
-   - Uses App Router and Server Actions for data mutations
-   - Provides REST/JSON API endpoints consumed by the mobile app
-   - TailwindCSS for styling
-   - Contain the schema of the prisma database in `/Users/mathiasbradiceanu/dev/perso/workout-cool-web/prisma/schema.prisma`
+Monetisation, ads, analytics and transactional email are gone or stubbed to
+no-ops so the app needs no third-party secrets. Don't reintroduce them. Details
+in `NOTES.md`.
 
-2. **Mobile App (React Native / Expo)**
+## Commands
 
-   - Communicates with the Next.js API for workouts
-   - Push notifications and offline support for session data
+```sh
+pnpm dev      # dev server (Turbopack)
+pnpm build    # production build
+pnpm lint     # ESLint — must stay at 0 errors
+pnpm db:seed  # seed sample data
+```
 
-3. **Both projects are using the FSD design system**.
-
-### Data Flow
-
-1. Mobile app and browser make API requests to the Next.js server
-2. Next.js Server Actions handle form submissions, data mutations, and fetches
-3. Data is stored/retrieved from the database via Next.js backend logic
-4. Web client renders pages and exposes JSON endpoints
-5. Mobile app syncs progress and displays workout sessions
-
-## Key Features
-
-- **3-Step Session Builder**: Equipment → Target Muscles → Generated Exercises
-- **Embedded Videos**: Guide users through each exercise
-- **In-Session Tracking**: Add sets with Reps, Weight, Time, or Bodyweight
-- **Session History**: “Commit-style” log of past workouts on user profile
-- **Repeat & Share**: Re-run past sessions or share summaries with others
-
-## External Integrations
-
-- **Database**: PostgreSQL via Next.js data layer
-- **ORM**: Prisma, the schema is under `/Users/mathiasbradiceanu/dev/perso/workout-cool-web/prisma/schema.prisma`
-- **Authentication**: BetterAuth (email/password, OAuth)
-- **Video Hosting**: YouTube
-
-## Linting
-
-- ESLint and Prettier configured in both web and mobile workspaces
+Local setup (Postgres required) is documented in `PROVENANCE.md`.
 
 ## Deployment
 
-- **Website**: Vercel (Next.js)
-- **Mobile App**: Expo EAS Build & Updates
+Cloudflare Workers via `@opennextjs/cloudflare`, with Neon/Supabase Postgres.
+Step-by-step in `NOTES.md`.

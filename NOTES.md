@@ -13,10 +13,10 @@ make without being able to ask are marked **[call]** with a one-line reason.
 | Only two allowlisted emails can log in | ✅ verified both directions |
 | A real workout logs and displays correctly | ✅ verified end-to-end |
 | Clean, incrementally committed repo | ✅ |
-| Cloudflare deploy-ready | ⚠️ **blocked — see "Production build" below** |
+| Cloudflare deploy-ready | ✅ build fixed — remaining steps are dashboard work |
 
 `next dev` runs fine and the whole logging flow works against a real Postgres.
-`next build` does not currently complete. That is the one open item.
+`next build` now completes as well — see "The production build" below.
 
 ---
 
@@ -139,15 +139,14 @@ the brief I stopped here.
 
 ### Exact next steps to deploy
 
-1. Fix the production build (below). Nothing else can proceed until this is done.
-2. Create a Postgres database at [neon.tech](https://neon.tech) (free tier) and
+1. Create a Postgres database at [neon.tech](https://neon.tech) (free tier) and
    copy the pooled connection string.
-3. Swap Prisma to the Neon driver adapter:
+2. Swap Prisma to the Neon driver adapter:
    `pnpm add @prisma/adapter-neon @neondatabase/serverless`, add
    `previewFeatures = ["driverAdapters"]` to the Prisma client generator, and
    construct `PrismaClient` with the adapter in `src/shared/lib/prisma.ts`.
-4. `npx wrangler login`
-5. Push secrets:
+3. `npx wrangler login`
+4. Push secrets:
    ```sh
    npx wrangler secret put DATABASE_URL
    npx wrangler secret put BETTER_AUTH_SECRET     # openssl rand -base64 32
@@ -156,59 +155,47 @@ the brief I stopped here.
    ```
    `NEXT_PUBLIC_APP_URL` is inlined at build time — set it in the build env, not
    as a secret.
-6. Apply the schema to Neon: `DATABASE_URL=<neon url> npx prisma migrate deploy`
-7. `npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy`
+5. Apply the schema to Neon: `DATABASE_URL=<neon url> npx prisma migrate deploy`
+6. `npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy`
 
 ---
 
-## ⚠️ Open blocker: the production build
+## The production build (fixed)
 
-`next build` fails while prerendering the synthetic `/_global-error` page:
+`next build` used to fail while prerendering the synthetic `/_global-error`
+page:
 
 ```
 TypeError: Cannot read properties of null (reading 'useContext')
 Export encountered an error on /_global-error/page
 ```
 
-**Diagnosis.** The app's root layout lives at `app/[locale]/layout.tsx` and
-renders `<html>` plus all the client providers (i18n, theme, query client).
-Next generates `/_global-error` and `/_not-found` *outside* any `[locale]`
-value, so those providers never mount and the first `useContext` returns null.
+**Cause.** The only root layout was `app/[locale]/layout.tsx`, which rendered
+`<html>` *and* all the client providers (i18n, theme, query client). Next
+generates `/_global-error` and `/_not-found` outside any `[locale]` value, so
+those providers never mounted and the first `useContext` returned null. This was
+inherited from upstream v1.3.2, which fails identically.
 
-Evidence it's the layout and not any one component: stubbing `not-found.tsx`
-down to a bare `<div>` didn't fix it, it just moved the failure from
-`/_global-error` to `/_not-found`.
+**Fix (the layout split suggested here previously).**
 
-**Confirmed inherited, not caused by the strip.** I built pristine upstream
-v1.3.2 (the vendored snapshot at commit `c19402e`, its own `node_modules`, its
-own env) and it fails with the byte-identical error on the same page. So this
-ships broken from upstream against the Next version upstream itself pins
-(16.2.1) — it is not fallout from anything removed here.
+- `app/layout.tsx` is now the real root layout. It owns `<html>`/`<body>`, the
+  fonts, `globals.css` and the locale-independent PWA meta tags — and nothing
+  else. No providers, no context, no i18n, so the synthetic pages have a valid
+  root layout they can prerender against.
+- `app/[locale]/layout.tsx` keeps `generateMetadata` and is otherwise reduced to
+  mounting `<Providers>`, the locale manifest link, the structured-data scripts
+  and the page shell. It no longer renders `<html>`.
+- `lang` is hardcoded to `en` on the root `<html>`; `en` is the only locale that
+  matters here (see the i18n note above).
+- Dropped along the way: the AdSense/Ezoic head scripts and the GA4 block (both
+  already inert after the analytics/ads strip), and the `hreflang` alternates
+  for workout.cool, which point at the upstream public site.
 
-Worth knowing: pristine upstream also refuses to build at all without
-`REVENUECAT_SECRET_KEY`, `STRIPE_SECRET_KEY` and friends set. It hard-fails
-collecting `/api/billing/status` before it ever reaches prerendering. That is a
-decent retrospective argument for having stripped the monetisation code rather
-than leaving it configured with dummy values.
+`app/global-error.tsx` was kept — it's the right thing to have regardless, even
+though Next doesn't use it for the synthetic route.
 
-**Suggested fix** (attempted the cheap version, didn't work; the real one is
-too large to start unsupervised at the end of the session, and it touches the
-layout every page depends on): split the layout. Add a real `app/layout.tsx` that owns `<html>`/`<body>` and nothing
-else, and reduce `app/[locale]/layout.tsx` to a fragment that mounts the
-providers. Then the synthetic pages get a valid root layout with no context
-dependency.
-
-Two cheaper things I tried that did *not* fix it, so nobody repeats them:
-a self-contained `app/global-error.tsx` (kept — it's the right thing to have
-regardless, but Next doesn't pick it up for the synthetic route), and a
-pass-through `app/layout.tsx` returning `children` (reverted, no effect).
-Stubbing `not-found.tsx` to a bare `<div>` only moved the failure to
-`/_not-found`, which is what pointed at the layout in the first place.
-
-`next dev` is unaffected, so local development and Step 2 work can continue
-while this is open.
-
----
+Verified: `pnpm build` completes, and `pnpm lint` is clean (24 warnings, 0
+errors — the warnings are inherited).
 
 ## Smaller things deferred
 
@@ -216,9 +203,6 @@ while this is open.
   `prisma/schema.prisma` above the model, as instructed. The plan is a derived
   `DailyStat` table (one row per user per day) filled by a nightly job, so the
   graphs never re-parse the parallel arrays. Not needed for logging.
-- **`CLAUDE.md`** in this directory is still upstream's, and refers to the
-  original author's local paths and a React Native app we don't have. It should
-  be rewritten or deleted.
 - **Turbopack workspace-root warning** on every `next dev`, left over from when
   this lived under a portfolio repo with its own `package-lock.json` above it.
   Should be gone now that this is its own repo; if it isn't, set
